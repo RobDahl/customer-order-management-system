@@ -60,7 +60,9 @@ dotnet run --project src/Coms.Web
 
 Then open the desktop client from Visual Studio (`src/Coms.Desktop`).
 
-Detailed setup, configuration and architecture notes live in [docs/](docs/).
+[docs/setup.md](docs/setup.md) has prerequisites, connection string
+configuration, a full command reference (database reset, tests, formatting,
+report and smoke-test scripts) and troubleshooting.
 
 ## Status
 

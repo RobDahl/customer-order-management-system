@@ -80,10 +80,50 @@ The data integration tests use LocalDB by default and skip themselves when
 no SQL Server is reachable on non-Windows machines. Point them at another
 server with `COMS_TEST_CONNECTION`.
 
+## Command reference
+
+Everything above in one place. All commands run from the repository root.
+
+| Task | Command |
+| ---- | ------- |
+| Create or update the database | `dotnet run --project tools/Coms.DbMigrator` |
+| Create or update and load demo data | `dotnet run --project tools/Coms.DbMigrator -- --seed` |
+| Reset the database to a clean seed (development only) | `dotnet run --project tools/Coms.DbMigrator -- --drop --seed` |
+| Migrator options | `dotnet run --project tools/Coms.DbMigrator -- --help` |
+| Run the web application | `dotnet run --project src/Coms.Web` then open <https://localhost:7180> |
+| Build the desktop client | `dotnet build src/Coms.Desktop` then run `src\Coms.Desktop\bin\Debug\net48\Coms.Desktop.exe` |
+| Build everything | `dotnet build CustomerOrderManagement.sln` |
+| Run all tests | `dotnet test CustomerOrderManagement.sln` |
+| Run one test project | `dotnet test tests/Coms.Domain.Tests` |
+| Check formatting (what CI runs) | `dotnet format CustomerOrderManagement.sln --verify-no-changes` |
+| Fix formatting | `dotnet format CustomerOrderManagement.sln` |
+| Run every report against the seed data | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -W -w 200 -i db/scripts/sample-reports.sql` |
+| Exercise the workflow procedures | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -i db/scripts/workflow-smoke-test.sql` |
+| Index usage and missing-index suggestions | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -W -w 200 -i db/scripts/index-usage.sql` |
+| Ad-hoc query | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -Q "SELECT TOP 5 * FROM rpt.vw_OrderSummary"` |
+
+`-I` turns on `QUOTED_IDENTIFIER`, which the filtered indexes need. `-W`
+trims padding and `-w 200` widens the output so report columns fit.
+
 ## Troubleshooting
 
 - **LocalDB not found**: run `sqllocaldb info`. If `MSSQLLocalDB` is missing,
   create it with `sqllocaldb create MSSQLLocalDB -s`.
+- **"Cannot open database Coms"** from a client, and the migrator then fails
+  with **"Cannot create file ... Coms.mdf because it already exists"**: the
+  LocalDB instance was recreated (a Visual Studio or SQL tools update can do
+  this) and lost its registration of the database, but the files in your
+  profile folder are intact. Reattach them:
+
+  ```
+  sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "CREATE DATABASE Coms ON (FILENAME = 'C:\Users\<you>\Coms.mdf'), (FILENAME = 'C:\Users\<you>\Coms_log.ldf') FOR ATTACH;"
+  ```
+
+  Or, if the data does not matter, delete the two files and run the
+  migrator with `--seed` again.
+- **sqlcmd scripts fail with "incorrect settings: QUOTED_IDENTIFIER"**: the
+  scripts in `db/scripts` set the option themselves; for ad-hoc statements
+  pass `-I` to `sqlcmd`. Filtered indexes require it.
 - **Certificate errors**: the connection strings include
   `TrustServerCertificate=true` for development. Remove it and install a
   proper certificate for anything beyond a workstation.
