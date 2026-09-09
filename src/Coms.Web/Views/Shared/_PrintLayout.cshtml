@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="print-body">
+    <div class="print-toolbar">
+        <button type="button" onclick="window.print()">Print</button>
+        <a href="@ViewData["BackUrl"]">Back</a>
+    </div>
+    <div class="print-page">
+        @RenderBody()
+    </div>
+</body>
+</html>

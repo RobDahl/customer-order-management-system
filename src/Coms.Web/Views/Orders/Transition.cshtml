@@ -1,0 +1,46 @@
+@model TransitionModel
+@{
+    Order o = Model.Order!;
+    ViewData["Title"] = Model.Verb + " order " + o.OrderNumber;
+    ViewData["Nav"] = "Orders";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Orders</a> &rsaquo; <a href=\"" + Url.Action("Details", new { id = o.Id }) + "\">" + o.OrderNumber + "</a> &rsaquo; " + Model.Verb;
+}
+
+<form asp-action="Transition" method="post" class="narrow">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="To" />
+    <input type="hidden" asp-for="RowVersion" />
+
+    <section class="panel">
+        <table class="def">
+            <tr><th>Order</th><td class="mono">@o.OrderNumber</td></tr>
+            <tr><th>Current status</th><td>@o.Status</td></tr>
+            <tr><th>New status</th><td><strong>@Model.To</strong></td></tr>
+            <tr><th>Lines</th><td class="num">@o.Lines.Count</td></tr>
+            <tr><th>Total</th><td class="num">@o.Total.ToString("N2")</td></tr>
+        </table>
+
+        @if (Model.To == OrderStatus.Fulfilled)
+        {
+            <p>Fulfilling moves stock: each line's quantity is deducted from the product's quantity on hand.</p>
+        }
+        else if (Model.To == OrderStatus.Approved)
+        {
+            <p>Approval checks the customer's credit limit against outstanding invoices and committed orders.</p>
+        }
+        else if (Model.To == OrderStatus.Cancelled)
+        {
+            <p>A cancelled order cannot be reopened.</p>
+        }
+
+        <div class="form-grid">
+            <label asp-for="Comment">Comment</label>
+            <div><input asp-for="Comment" maxlength="500" /></div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a asp-action="Details" asp-route-id="@o.Id" class="btn">Back</a>
+        <button type="submit" class="primary">@Model.Verb</button>
+    </div>
+</form>

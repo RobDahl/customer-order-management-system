@@ -1,0 +1,35 @@
+@model CreateInvoiceModel
+@{
+    Order o = Model.Order!;
+    ViewData["Title"] = "Invoice order " + o.OrderNumber;
+    ViewData["Nav"] = "Invoices";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Details", "Orders", new { id = o.Id }) + "\">" + o.OrderNumber + "</a> &rsaquo; Create invoice";
+}
+
+<form asp-action="CreateFromOrder" method="post" class="narrow">
+    <div asp-validation-summary="All" class="validation-summary"></div>
+    <input type="hidden" asp-for="OrderId" />
+    <input type="hidden" asp-for="RowVersion" />
+
+    <section class="panel">
+        <table class="def">
+            <tr><th>Order</th><td class="mono">@o.OrderNumber</td></tr>
+            <tr><th>Customer</th><td>@(Model.Customer == null ? "" : Model.Customer.CustomerNumber + " " + Model.Customer.Name)</td></tr>
+            <tr><th>Payment terms</th><td>@(Model.Customer?.PaymentTermsDays) days</td></tr>
+            <tr><th>Subtotal</th><td class="num">@o.Subtotal.ToString("N2")</td></tr>
+            <tr><th>Tax</th><td class="num">@o.TaxAmount.ToString("N2")</td></tr>
+            <tr><th>Total</th><td class="num"><strong>@o.Total.ToString("N2")</strong></td></tr>
+        </table>
+
+        <div class="form-grid">
+            <label asp-for="IssuedDate">Issue date *</label>
+            <div><input asp-for="IssuedDate" type="date" class="short" /><span asp-validation-for="IssuedDate" class="field-error"></span></div>
+        </div>
+        <p class="muted">The due date is the issue date plus the customer's payment terms. The invoice number is assigned when it is issued.</p>
+    </section>
+
+    <div class="form-actions">
+        <a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id" class="btn">Back</a>
+        <button type="submit" class="primary">Issue invoice</button>
+    </div>
+</form>

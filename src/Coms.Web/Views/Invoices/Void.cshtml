@@ -1,0 +1,33 @@
+@model VoidInvoiceModel
+@{
+    Invoice i = Model.Invoice!;
+    ViewData["Title"] = "Void invoice " + i.InvoiceNumber;
+    ViewData["Nav"] = "Invoices";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Invoices</a> &rsaquo; <a href=\"" + Url.Action("Details", new { id = i.Id }) + "\">" + i.InvoiceNumber + "</a> &rsaquo; Void";
+}
+
+<form asp-action="Void" method="post" class="narrow">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="RowVersion" />
+
+    <section class="panel">
+        <table class="def">
+            <tr><th>Invoice</th><td class="mono">@i.InvoiceNumber</td></tr>
+            <tr><th>Status</th><td>@i.Status</td></tr>
+            <tr><th>Total</th><td class="num">@i.Total.ToString("N2")</td></tr>
+            <tr><th>Paid</th><td class="num">@i.AmountPaid.ToString("N2")</td></tr>
+        </table>
+
+        <p class="message-error">Voiding keeps the invoice on file marked Void and returns the order to Fulfilled so a corrected invoice can be issued. An invoice with payments cannot be voided.</p>
+
+        <div class="form-grid">
+            <label asp-for="Comment">Reason</label>
+            <div><input asp-for="Comment" maxlength="500" /></div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a asp-action="Details" asp-route-id="@i.Id" class="btn">Back</a>
+        <button type="submit" class="primary">Void invoice</button>
+    </div>
+</form>

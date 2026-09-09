@@ -1,0 +1,85 @@
+@model InvoicePrintModel
+@{
+    Layout = "_PrintLayout";
+    Invoice i = Model.Invoice;
+    ViewData["Title"] = "Invoice " + i.InvoiceNumber;
+    ViewData["BackUrl"] = Url.Action("Details", new { id = i.Id });
+}
+
+<div class="print-header">
+    <div>
+        <div class="print-company">Customer Order Management</div>
+        <div class="muted">Internal operations</div>
+    </div>
+    <div class="print-doc">
+        <div class="print-doc-title">@(i.Status == InvoiceStatus.Void ? "VOID INVOICE" : "INVOICE")</div>
+        <table class="def compact">
+            <tr><th>Invoice</th><td class="mono">@i.InvoiceNumber</td></tr>
+            <tr><th>Issued</th><td>@i.IssuedDate.ToString("yyyy-MM-dd")</td></tr>
+            <tr><th>Due</th><td>@i.DueDate.ToString("yyyy-MM-dd")</td></tr>
+            <tr><th>Order</th><td class="mono">@(Model.Order?.OrderNumber)</td></tr>
+            <tr><th>Reference</th><td>@(Model.Order?.CustomerReference)</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="print-addresses">
+    <div>
+        <div class="print-label">Bill to</div>
+        @if (Model.Customer != null)
+        {
+            <div><span class="mono">@Model.Customer.CustomerNumber</span> @Model.Customer.Name</div>
+            <div>@Model.Customer.BillingAddress.Line1</div>
+            @if (!string.IsNullOrEmpty(Model.Customer.BillingAddress.Line2)) { <div>@Model.Customer.BillingAddress.Line2</div> }
+            <div>@Model.Customer.BillingAddress.City @Model.Customer.BillingAddress.Region @Model.Customer.BillingAddress.PostalCode</div>
+            <div>@Model.Customer.BillingAddress.Country</div>
+        }
+    </div>
+    <div>
+        <div class="print-label">Ship to</div>
+        @if (Model.Order?.ShipTo != null)
+        {
+            <div>@Model.Order.ShipTo.Line1</div>
+            @if (!string.IsNullOrEmpty(Model.Order.ShipTo.Line2)) { <div>@Model.Order.ShipTo.Line2</div> }
+            <div>@Model.Order.ShipTo.City @Model.Order.ShipTo.Region @Model.Order.ShipTo.PostalCode</div>
+            <div>@Model.Order.ShipTo.Country</div>
+        }
+    </div>
+</div>
+
+<table class="grid print-lines">
+    <thead>
+        <tr><th class="num">#</th><th>SKU</th><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Disc %</th><th class="num">Line total</th></tr>
+    </thead>
+    <tbody>
+        @if (Model.Order != null)
+        {
+            foreach (OrderLine l in Model.Order.Lines)
+            {
+                <tr>
+                    <td class="num">@l.LineNumber</td>
+                    <td class="mono">@l.Sku</td>
+                    <td>@l.Description</td>
+                    <td class="num">@l.Quantity.ToString("0.###")</td>
+                    <td class="num">@l.UnitPrice.ToString("N2")</td>
+                    <td class="num">@(l.DiscountPercent == 0 ? "" : l.DiscountPercent.ToString("0.##"))</td>
+                    <td class="num">@l.LineTotal.ToString("N2")</td>
+                </tr>
+            }
+        }
+    </tbody>
+    <tfoot>
+        <tr><td colspan="6" class="num">Subtotal</td><td class="num">@i.Subtotal.ToString("N2")</td></tr>
+        <tr><td colspan="6" class="num">Tax</td><td class="num">@i.TaxAmount.ToString("N2")</td></tr>
+        <tr class="total"><td colspan="6" class="num">Total</td><td class="num">@i.Total.ToString("N2")</td></tr>
+        <tr><td colspan="6" class="num">Paid</td><td class="num">@i.AmountPaid.ToString("N2")</td></tr>
+        <tr class="total"><td colspan="6" class="num">Balance due</td><td class="num">@i.Balance.ToString("N2")</td></tr>
+    </tfoot>
+</table>
+
+<div class="print-notes">
+    <div class="print-label">Payment terms</div>
+    <div>Payment due by @i.DueDate.ToString("yyyy-MM-dd"). Please quote the invoice number with your payment.</div>
+</div>
+
+<div class="print-footer">Printed @DateTime.Now.ToString("yyyy-MM-dd HH:mm") by @User.Identity?.Name</div>

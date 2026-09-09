@@ -1,0 +1,134 @@
+@model OrderDetailsModel
+@{
+    Order o = Model.Order;
+    ViewData["Title"] = "Order " + o.OrderNumber;
+    ViewData["Nav"] = "Orders";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Orders</a> &rsaquo; " + o.OrderNumber;
+    bool canEdit = User.CanEdit();
+}
+
+<div class="toolbar">
+    <div class="toolbar-actions">
+        @if (canEdit && o.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@o.Id" class="btn primary">Edit</a>
+        }
+        @if (canEdit)
+        {
+            foreach (OrderStatus target in Model.AllowedTransitions)
+            {
+                <a asp-action="Transition" asp-route-id="@o.Id" asp-route-to="@target" class="btn @(target == OrderStatus.Cancelled ? "" : "primary")">
+                    @(target == OrderStatus.Submitted ? "Submit" : target == OrderStatus.Approved ? "Approve" : target == OrderStatus.Fulfilled ? "Fulfil" : "Cancel")
+                </a>
+            }
+            if (o.Status == OrderStatus.Fulfilled && Model.Invoice == null)
+            {
+                <a asp-controller="Invoices" asp-action="CreateFromOrder" asp-route-orderId="@o.Id" class="btn primary">Create invoice</a>
+            }
+        }
+        <a asp-action="Print" asp-route-id="@o.Id" asp-route-kind="confirmation" class="btn" target="_blank">Print confirmation</a>
+        <a asp-action="Print" asp-route-id="@o.Id" asp-route-kind="picklist" class="btn" target="_blank">Print pick list</a>
+    </div>
+</div>
+
+<div class="columns">
+    <section class="panel">
+        <h2>Order</h2>
+        <table class="def">
+            <tr><th>Number</th><td class="mono">@o.OrderNumber</td></tr>
+            <tr><th>Status</th><td class="status-@o.Status.ToString().ToLowerInvariant()">@o.Status</td></tr>
+            <tr><th>Customer</th><td>
+                @if (Model.Customer != null)
+                {
+                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.Id"><span class="mono">@Model.Customer.CustomerNumber</span> @Model.Customer.Name</a>
+                }
+            </td></tr>
+            <tr><th>Order date</th><td>@o.OrderDate.ToString("yyyy-MM-dd")</td></tr>
+            <tr><th>Required date</th><td>@(o.RequiredDate?.ToString("yyyy-MM-dd"))</td></tr>
+            <tr><th>Customer reference</th><td>@o.CustomerReference</td></tr>
+            <tr><th>Ship to</th><td>@(o.ShipTo?.ToString())</td></tr>
+            <tr><th>Invoice</th><td class="mono">
+                @if (Model.Invoice != null)
+                {
+                    <a asp-controller="Invoices" asp-action="Details" asp-route-id="@Model.Invoice.Id">@Model.Invoice.InvoiceNumber</a> <span class="status-@Model.Invoice.Status.ToString().ToLowerInvariant()">@Model.Invoice.Status</span>
+                }
+            </td></tr>
+            <tr><th>Notes</th><td class="pre">@o.Notes</td></tr>
+            <tr><th>Created</th><td>@o.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @o.CreatedBy</td></tr>
+            <tr><th>Updated</th><td>@o.UpdatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @o.UpdatedBy</td></tr>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Status history</h2>
+        <table class="grid">
+            <thead><tr><th>When</th><th>From</th><th>To</th><th>By</th><th>Comment</th></tr></thead>
+            <tbody>
+                @foreach (OrderStatusChange h in o.History)
+                {
+                    <tr>
+                        <td class="date">@h.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(h.FromStatus?.ToString())</td>
+                        <td class="status-@h.ToStatus.ToString().ToLowerInvariant()">@h.ToStatus</td>
+                        <td>@h.ChangedBy</td>
+                        <td>@h.Comment</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<section class="panel">
+    <h2>Lines</h2>
+    <table class="grid">
+        <thead>
+            <tr><th class="num">#</th><th>SKU</th><th>Description</th><th class="num">Quantity</th><th class="num">Unit price</th><th class="num">Discount %</th><th class="num">Line total</th></tr>
+        </thead>
+        <tbody>
+            @foreach (OrderLine l in o.Lines)
+            {
+                <tr>
+                    <td class="num">@l.LineNumber</td>
+                    <td class="mono">@l.Sku</td>
+                    <td>@l.Description</td>
+                    <td class="num">@l.Quantity.ToString("0.###")</td>
+                    <td class="num">@l.UnitPrice.ToString("N2")</td>
+                    <td class="num">@(l.DiscountPercent == 0 ? "" : l.DiscountPercent.ToString("0.##"))</td>
+                    <td class="num">@l.LineTotal.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr><td colspan="6" class="num">Subtotal</td><td class="num">@o.Subtotal.ToString("N2")</td></tr>
+            <tr><td colspan="6" class="num">Tax (@((o.TaxRate * 100).ToString("0.##"))%)</td><td class="num">@o.TaxAmount.ToString("N2")</td></tr>
+            <tr class="total"><td colspan="6" class="num">Total</td><td class="num">@o.Total.ToString("N2")</td></tr>
+        </tfoot>
+    </table>
+</section>
+
+<section class="panel">
+    <h2>Notes</h2>
+    @if (canEdit)
+    {
+        <form asp-action="AddNote" method="post" class="note-form">
+            <input type="hidden" name="EntityType" value="@NoteEntityType.Order" />
+            <input type="hidden" name="EntityId" value="@o.Id" />
+            <textarea name="Body" rows="2" placeholder="Add a note"></textarea>
+            <button type="submit">Add note</button>
+        </form>
+    }
+    <table class="grid">
+        <thead><tr><th>When</th><th>Who</th><th>Note</th></tr></thead>
+        <tbody>
+            @foreach (Note n in Model.Notes)
+            {
+                <tr><td class="date">@n.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td><td>@n.CreatedBy</td><td class="pre">@n.Body</td></tr>
+            }
+            @if (Model.Notes.Count == 0)
+            {
+                <tr><td colspan="3" class="muted">No notes.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

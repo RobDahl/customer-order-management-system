@@ -1,0 +1,73 @@
+@model InvoiceListModel
+@{
+    ViewData["Title"] = Model.Overdue ? "Overdue invoices" : "Invoices";
+    ViewData["Nav"] = "Invoices";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="Search">Search</label>
+        <input type="text" id="Search" name="search" value="@Model.Search" placeholder="Invoice, order or customer" />
+        <label for="Status">Status</label>
+        <select id="Status" name="status">
+            <option value="">All</option>
+            @foreach (InvoiceStatus status in System.Enum.GetValues(typeof(InvoiceStatus)))
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+        <label for="From">Issued from</label>
+        <input type="date" id="From" name="from" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+        <label for="To">to</label>
+        <input type="date" id="To" name="to" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+        <label><input type="checkbox" name="overdue" value="true" checked="@Model.Overdue" /> Overdue only</label>
+        @if (Model.CustomerId.HasValue)
+        {
+            <input type="hidden" name="customerId" value="@Model.CustomerId" />
+        }
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Desc.ToString().ToLowerInvariant()" />
+        <button type="submit">Search</button>
+        <a asp-action="Index" class="btn">Clear</a>
+    </form>
+</div>
+
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@Html.SortLink("Invoice", "number")</th>
+            <th>@Html.SortLink("Order", "order")</th>
+            <th>@Html.SortLink("Customer", "customer")</th>
+            <th>@Html.SortLink("Issued", "issued")</th>
+            <th>@Html.SortLink("Due", "due")</th>
+            <th>@Html.SortLink("Status", "status")</th>
+            <th class="num">@Html.SortLink("Total", "total")</th>
+            <th class="num">@Html.SortLink("Paid", "paid")</th>
+            <th class="num">@Html.SortLink("Balance", "balance")</th>
+            <th class="num">Overdue</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (InvoiceSummary i in Model.Results.Items)
+        {
+            <tr class="@(i.Status == InvoiceStatus.Void ? "row-muted" : "")">
+                <td class="mono"><a asp-action="Details" asp-route-id="@i.InvoiceId">@i.InvoiceNumber</a></td>
+                <td class="mono"><a asp-controller="Orders" asp-action="Details" asp-route-id="@i.OrderId">@i.OrderNumber</a></td>
+                <td><span class="mono">@i.CustomerNumber</span> @i.CustomerName</td>
+                <td class="date">@i.IssuedDate.ToString("yyyy-MM-dd")</td>
+                <td class="date">@i.DueDate.ToString("yyyy-MM-dd")</td>
+                <td class="status-@i.Status.ToString().ToLowerInvariant()">@i.Status</td>
+                <td class="num">@i.Total.ToString("N2")</td>
+                <td class="num">@i.AmountPaid.ToString("N2")</td>
+                <td class="num">@i.Balance.ToString("N2")</td>
+                <td class="num @(i.DaysOverdue > 0 ? "warn" : "")">@(i.DaysOverdue > 0 ? i.DaysOverdue.ToString() + " d" : "")</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="10" class="muted">No invoices match.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="PagerModel.From(Model.Results)" />

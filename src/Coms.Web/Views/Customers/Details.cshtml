@@ -8,11 +8,25 @@
     string rowVersion = System.Convert.ToBase64String(c.RowVersion);
 }
 
+<div class="toolbar">
+    <div class="toolbar-actions">
+        @if (canEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@c.Id" class="btn primary">Edit</a>
+            if (c.CanOrder)
+            {
+                <a asp-controller="Orders" asp-action="Create" asp-route-customerId="@c.Id" class="btn primary">New order</a>
+            }
+        }
+        <a asp-action="Statement" asp-route-id="@c.Id" class="btn">Statement</a>
+        <a asp-controller="Orders" asp-action="Index" asp-route-customerId="@c.Id" class="btn">All orders</a>
+    </div>
+</div>
+
 @if (canEdit)
 {
     <div class="toolbar">
         <div class="toolbar-actions">
-            <a asp-action="Edit" asp-route-id="@c.Id" class="btn primary">Edit</a>
             @if (c.Status != CustomerStatus.Active)
             {
                 <form asp-action="ChangeStatus" method="post" class="inline">

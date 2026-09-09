@@ -74,6 +74,16 @@ namespace Coms.Web.Tests
             return client;
         }
 
+        /// <summary>Runs a scalar query against the test database, outside the application.</summary>
+        public async Task<T> ScalarAsync<T>(string sql, object? parameters = null)
+        {
+            using (var connection = new Microsoft.Data.SqlClient.SqlConnection(ConnectionString))
+            {
+                await connection.OpenAsync();
+                return (await Dapper.SqlMapper.ExecuteScalarAsync<T>(connection, sql, parameters))!;
+            }
+        }
+
         public static async Task<string> AntiForgeryTokenAsync(HttpResponseMessage page)
         {
             string html = await page.Content.ReadAsStringAsync();

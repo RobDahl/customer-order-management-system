@@ -1,0 +1,84 @@
+@model OrderListModel
+@{
+    ViewData["Title"] = "Orders";
+    ViewData["Nav"] = "Orders";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="Search">Search</label>
+        <input type="text" id="Search" name="search" value="@Model.Search" placeholder="Order, customer or reference" />
+        <label for="Status">Status</label>
+        <select id="Status" name="status">
+            <option value="">All</option>
+            @foreach (OrderStatus status in System.Enum.GetValues(typeof(OrderStatus)))
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+        <label for="From">From</label>
+        <input type="date" id="From" name="from" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+        <label for="To">To</label>
+        <input type="date" id="To" name="to" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+        @if (Model.CustomerId.HasValue)
+        {
+            <input type="hidden" name="customerId" value="@Model.CustomerId" />
+            <span class="muted">Customer: @Model.CustomerName</span>
+        }
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Desc.ToString().ToLowerInvariant()" />
+        <button type="submit">Search</button>
+        <a asp-action="Index" class="btn">Clear</a>
+    </form>
+    @if (User.CanEdit())
+    {
+        <div class="toolbar-actions">
+            <a asp-action="Create" asp-route-customerId="@Model.CustomerId" class="btn primary">New order</a>
+        </div>
+    }
+</div>
+
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@Html.SortLink("Order", "number")</th>
+            <th>@Html.SortLink("Date", "date")</th>
+            <th>@Html.SortLink("Required", "required")</th>
+            <th>@Html.SortLink("Customer", "customer")</th>
+            <th>Reference</th>
+            <th>@Html.SortLink("Status", "status")</th>
+            <th class="num">Lines</th>
+            <th class="num">@Html.SortLink("Total", "total")</th>
+            <th>Invoice</th>
+            <th>@Html.SortLink("Updated", "updated")</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (OrderSummary o in Model.Results.Items)
+        {
+            <tr class="@(o.Status == OrderStatus.Cancelled ? "row-muted" : "")">
+                <td class="mono"><a asp-action="Details" asp-route-id="@o.OrderId">@o.OrderNumber</a></td>
+                <td class="date">@o.OrderDate.ToString("yyyy-MM-dd")</td>
+                <td class="date">@(o.RequiredDate?.ToString("yyyy-MM-dd"))</td>
+                <td><span class="mono">@o.CustomerNumber</span> @o.CustomerName</td>
+                <td>@o.CustomerReference</td>
+                <td class="status-@o.Status.ToString().ToLowerInvariant()">@o.Status</td>
+                <td class="num">@o.LineCount</td>
+                <td class="num">@o.Total.ToString("N2")</td>
+                <td class="mono">
+                    @if (o.InvoiceId.HasValue)
+                    {
+                        <a asp-controller="Invoices" asp-action="Details" asp-route-id="@o.InvoiceId">@o.InvoiceNumber</a>
+                    }
+                </td>
+                <td class="date">@o.UpdatedAtUtc.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="10" class="muted">No orders match.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="PagerModel.From(Model.Results)" />

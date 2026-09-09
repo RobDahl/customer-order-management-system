@@ -511,3 +511,152 @@ input.short {
 .auth-panel .form-grid {
     grid-template-columns: 100px 1fr;
 }
+
+/* Orders and invoices */
+
+select.wide {
+    width: 100%;
+    max-width: 420px;
+}
+
+table.lines input,
+table.lines select {
+    margin: 0;
+}
+
+table.lines td.num input {
+    text-align: right;
+}
+
+table.grid tfoot td {
+    background: var(--bg-bar);
+}
+
+table.grid tr.total td {
+    font-weight: bold;
+    border-top: 2px solid var(--text);
+}
+
+table.def.compact th {
+    width: 80px;
+    padding: 1px 6px;
+}
+
+table.def.compact td {
+    padding: 1px 6px;
+}
+
+/* Print documents (order confirmation, pick list, invoice) */
+
+.print-body {
+    display: block;
+    background: #FFFFFF;
+    min-height: 0;
+}
+
+.print-toolbar {
+    padding: 6px 12px;
+    background: var(--bg-bar);
+    border-bottom: 1px solid var(--border);
+}
+
+.print-toolbar a {
+    margin-left: 12px;
+}
+
+.print-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    font-size: 12px;
+}
+
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.print-company {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.print-doc {
+    text-align: right;
+}
+
+.print-doc table {
+    margin-left: auto;
+    width: auto;
+}
+
+.print-doc-title {
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.print-addresses {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 16px;
+}
+
+.print-addresses > div {
+    flex: 1 1 0;
+}
+
+.print-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.print-lines th {
+    position: static;
+}
+
+.pick-box {
+    min-width: 60px;
+}
+
+.print-signoff {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.print-notes {
+    margin-top: 16px;
+}
+
+.print-footer {
+    margin-top: 24px;
+    font-size: 10px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+}
+
+@media print {
+    .print-toolbar {
+        display: none;
+    }
+
+    .print-page {
+        max-width: none;
+        padding: 0;
+    }
+
+    table.grid th,
+    table.grid tfoot td {
+        background: #EEEEEE !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

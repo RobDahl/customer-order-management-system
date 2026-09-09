@@ -59,6 +59,26 @@ namespace Coms.Web.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Statement(int id)
+        {
+            Customer? customer = await _customers.GetAsync(id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            var model = new StatementModel
+            {
+                Customer = customer,
+                Balance = await _customers.GetBalanceAsync(id),
+                Invoices = await _invoices.GetForCustomerAsync(id),
+                Payments = await _invoices.GetPaymentsForCustomerAsync(id)
+            };
+
+            return View(model);
+        }
+
+        [HttpGet]
         [Authorize(Policy = Policies.CanEdit)]
         public IActionResult Create()
         {

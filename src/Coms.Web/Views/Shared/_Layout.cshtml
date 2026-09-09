@@ -22,6 +22,8 @@
         <nav class="topbar-menu">
             <a asp-controller="Home" asp-action="Index">Dashboard</a>
             <a asp-controller="Customers" asp-action="Index">Customers</a>
+            <a asp-controller="Orders" asp-action="Index">Orders</a>
+            <a asp-controller="Invoices" asp-action="Index">Invoices</a>
             <a asp-controller="Products" asp-action="Index">Products</a>
         </nav>
         <span class="topbar-user">
@@ -38,8 +40,9 @@
                 <div class="sidenav-heading">Sales</div>
                 <a asp-controller="Home" asp-action="Index" class="@(area == "Dashboard" ? "current" : "")">Dashboard</a>
                 <a asp-controller="Customers" asp-action="Index" class="@(area == "Customers" ? "current" : "")">Customers</a>
-                <span class="sidenav-disabled">Orders</span>
-                <span class="sidenav-disabled">Invoices</span>
+                <a asp-controller="Orders" asp-action="Index" class="@(area == "Orders" ? "current" : "")">Orders</a>
+                <a asp-controller="Invoices" asp-action="Index" class="@(area == "Invoices" ? "current" : "")">Invoices</a>
+                <a asp-controller="Invoices" asp-action="Index" asp-route-overdue="true">Overdue invoices</a>
             </div>
             <div class="sidenav-group">
                 <div class="sidenav-heading">Stock</div>

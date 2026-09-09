@@ -1,0 +1,131 @@
+@model InvoiceDetailsModel
+@{
+    Invoice i = Model.Invoice;
+    ViewData["Title"] = "Invoice " + i.InvoiceNumber;
+    ViewData["Nav"] = "Invoices";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Invoices</a> &rsaquo; " + i.InvoiceNumber;
+    bool canEdit = User.CanEdit();
+    DateTime today = DateTime.UtcNow.Date;
+}
+
+<div class="toolbar">
+    <div class="toolbar-actions">
+        @if (canEdit && i.IsOpen)
+        {
+            <a asp-action="Payment" asp-route-id="@i.Id" class="btn primary">Record payment</a>
+        }
+        @if (canEdit && i.Status != InvoiceStatus.Void && i.AmountPaid == 0)
+        {
+            <a asp-action="Void" asp-route-id="@i.Id" class="btn">Void</a>
+        }
+        <a asp-action="Print" asp-route-id="@i.Id" class="btn" target="_blank">Print invoice</a>
+        @if (Model.Customer != null)
+        {
+            <a asp-controller="Customers" asp-action="Statement" asp-route-id="@Model.Customer.Id" class="btn">Customer statement</a>
+        }
+    </div>
+</div>
+
+<div class="columns">
+    <section class="panel">
+        <h2>Invoice</h2>
+        <table class="def">
+            <tr><th>Number</th><td class="mono">@i.InvoiceNumber</td></tr>
+            <tr><th>Status</th><td class="status-@i.Status.ToString().ToLowerInvariant()">@i.Status</td></tr>
+            <tr><th>Customer</th><td>
+                @if (Model.Customer != null)
+                {
+                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.Id"><span class="mono">@Model.Customer.CustomerNumber</span> @Model.Customer.Name</a>
+                }
+            </td></tr>
+            <tr><th>Order</th><td class="mono">
+                @if (Model.Order != null)
+                {
+                    <a asp-controller="Orders" asp-action="Details" asp-route-id="@Model.Order.Id">@Model.Order.OrderNumber</a>
+                }
+            </td></tr>
+            <tr><th>Issued</th><td>@i.IssuedDate.ToString("yyyy-MM-dd")</td></tr>
+            <tr><th>Due</th><td class="@(i.IsOverdue(today) ? "warn" : "")">@i.DueDate.ToString("yyyy-MM-dd") @(i.IsOverdue(today) ? "(" + i.DaysOverdue(today) + " days overdue)" : "")</td></tr>
+            <tr><th>Subtotal</th><td class="num">@i.Subtotal.ToString("N2")</td></tr>
+            <tr><th>Tax</th><td class="num">@i.TaxAmount.ToString("N2")</td></tr>
+            <tr><th>Total</th><td class="num">@i.Total.ToString("N2")</td></tr>
+            <tr><th>Paid</th><td class="num">@i.AmountPaid.ToString("N2")</td></tr>
+            <tr><th>Balance</th><td class="num"><strong>@i.Balance.ToString("N2")</strong></td></tr>
+            <tr><th>Created</th><td>@i.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @i.CreatedBy</td></tr>
+            <tr><th>Updated</th><td>@i.UpdatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @i.UpdatedBy</td></tr>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Payments</h2>
+        <table class="grid">
+            <thead><tr><th>Date</th><th>Method</th><th>Reference</th><th class="num">Amount</th><th>Recorded by</th></tr></thead>
+            <tbody>
+                @foreach (Payment p in i.Payments)
+                {
+                    <tr>
+                        <td class="date">@p.PaidDate.ToString("yyyy-MM-dd")</td>
+                        <td>@p.Method</td>
+                        <td>@p.Reference</td>
+                        <td class="num">@p.Amount.ToString("N2")</td>
+                        <td>@p.CreatedBy</td>
+                    </tr>
+                }
+                @if (i.Payments.Count == 0)
+                {
+                    <tr><td colspan="5" class="muted">No payments.</td></tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>
+
+@if (Model.Order != null)
+{
+    <section class="panel">
+        <h2>Lines</h2>
+        <table class="grid">
+            <thead><tr><th class="num">#</th><th>SKU</th><th>Description</th><th class="num">Quantity</th><th class="num">Unit price</th><th class="num">Discount %</th><th class="num">Line total</th></tr></thead>
+            <tbody>
+                @foreach (OrderLine l in Model.Order.Lines)
+                {
+                    <tr>
+                        <td class="num">@l.LineNumber</td>
+                        <td class="mono">@l.Sku</td>
+                        <td>@l.Description</td>
+                        <td class="num">@l.Quantity.ToString("0.###")</td>
+                        <td class="num">@l.UnitPrice.ToString("N2")</td>
+                        <td class="num">@(l.DiscountPercent == 0 ? "" : l.DiscountPercent.ToString("0.##"))</td>
+                        <td class="num">@l.LineTotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+<section class="panel">
+    <h2>Notes</h2>
+    @if (canEdit)
+    {
+        <form asp-action="AddNote" method="post" class="note-form">
+            <input type="hidden" name="EntityType" value="@NoteEntityType.Invoice" />
+            <input type="hidden" name="EntityId" value="@i.Id" />
+            <textarea name="Body" rows="2" placeholder="Add a note"></textarea>
+            <button type="submit">Add note</button>
+        </form>
+    }
+    <table class="grid">
+        <thead><tr><th>When</th><th>Who</th><th>Note</th></tr></thead>
+        <tbody>
+            @foreach (Note n in Model.Notes)
+            {
+                <tr><td class="date">@n.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td><td>@n.CreatedBy</td><td class="pre">@n.Body</td></tr>
+            }
+            @if (Model.Notes.Count == 0)
+            {
+                <tr><td colspan="3" class="muted">No notes.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

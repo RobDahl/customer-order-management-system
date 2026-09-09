@@ -1,0 +1,116 @@
+@model OrderFormModel
+@{
+    ViewData["Title"] = Model.IsNew ? "New order" : "Edit " + Model.OrderNumber;
+    ViewData["Nav"] = "Orders";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Orders</a> &rsaquo; " + (Model.IsNew ? "New" : "<a href=\"" + Url.Action("Details", new { id = Model.Id }) + "\">" + Model.OrderNumber + "</a> &rsaquo; Edit");
+}
+
+<form asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@(Model.IsNew ? null : Model.Id)" method="post">
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="RowVersion" />
+    <input type="hidden" asp-for="OrderNumber" />
+
+    <div class="columns">
+        <section class="panel">
+            <h2>Order</h2>
+            <div class="form-grid">
+                <label asp-for="Input.CustomerId">Customer *</label>
+                <div>
+                    <select asp-for="Input.CustomerId" asp-items="Model.Customers" class="wide">
+                        <option value="0">-- select --</option>
+                    </select>
+                    <span asp-validation-for="Input.CustomerId" class="field-error"></span>
+                </div>
+
+                <label asp-for="Input.OrderDate">Order date *</label>
+                <div><input asp-for="Input.OrderDate" type="date" class="short" /><span asp-validation-for="Input.OrderDate" class="field-error"></span></div>
+
+                <label asp-for="Input.RequiredDate">Required date</label>
+                <div><input asp-for="Input.RequiredDate" type="date" class="short" /><span asp-validation-for="Input.RequiredDate" class="field-error"></span></div>
+
+                <label asp-for="Input.CustomerReference">Customer reference</label>
+                <div><input asp-for="Input.CustomerReference" maxlength="50" /><span asp-validation-for="Input.CustomerReference" class="field-error"></span></div>
+
+                <label asp-for="Input.Notes">Notes</label>
+                <div><textarea asp-for="Input.Notes" rows="3"></textarea></div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Ship to <span class="muted">(leave blank to use the customer's address)</span></h2>
+            <div class="form-grid">
+                <label asp-for="Input.ShipTo!.Line1">Line 1</label>
+                <div><input asp-for="Input.ShipTo!.Line1" maxlength="100" /><span asp-validation-for="Input.ShipTo!.Line1" class="field-error"></span></div>
+                <label asp-for="Input.ShipTo!.Line2">Line 2</label>
+                <div><input asp-for="Input.ShipTo!.Line2" maxlength="100" /></div>
+                <label asp-for="Input.ShipTo!.City">City</label>
+                <div><input asp-for="Input.ShipTo!.City" maxlength="80" /><span asp-validation-for="Input.ShipTo!.City" class="field-error"></span></div>
+                <label asp-for="Input.ShipTo!.Region">Region</label>
+                <div><input asp-for="Input.ShipTo!.Region" maxlength="80" /></div>
+                <label asp-for="Input.ShipTo!.PostalCode">Postal code</label>
+                <div><input asp-for="Input.ShipTo!.PostalCode" maxlength="20" class="short" /></div>
+                <label asp-for="Input.ShipTo!.Country">Country</label>
+                <div><input asp-for="Input.ShipTo!.Country" maxlength="60" /><span asp-validation-for="Input.ShipTo!.Country" class="field-error"></span></div>
+            </div>
+        </section>
+    </div>
+
+    <section class="panel">
+        <h2>Lines</h2>
+        <table class="grid lines">
+            <thead>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Product *</th>
+                    <th>Description <span class="muted">(blank = product name)</span></th>
+                    <th class="num">Quantity *</th>
+                    <th class="num">Unit price <span class="muted">(blank = list)</span></th>
+                    <th class="num">Discount %</th>
+                    <th class="num">Line total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Input.Lines.Count; i++)
+                {
+                    OrderLine? previewLine = Model.Preview?.Lines.Find(l => l.ProductId == Model.Input.Lines[i].ProductId);
+                    <tr>
+                        <td class="num">@(i + 1)</td>
+                        <td>
+                            <select asp-for="Input.Lines[i].ProductId" asp-items="Model.Products" class="wide">
+                                <option value="0">-- select --</option>
+                            </select>
+                            <span asp-validation-for="Input.Lines[i].ProductId" class="field-error"></span>
+                        </td>
+                        <td><input asp-for="Input.Lines[i].Description" maxlength="200" /><span asp-validation-for="Input.Lines[i].Description" class="field-error"></span></td>
+                        <td class="num"><input asp-for="Input.Lines[i].Quantity" type="number" step="0.001" min="0" class="short num" /><span asp-validation-for="Input.Lines[i].Quantity" class="field-error"></span></td>
+                        <td class="num"><input asp-for="Input.Lines[i].UnitPrice" type="number" step="0.01" min="0" class="short num" /><span asp-validation-for="Input.Lines[i].UnitPrice" class="field-error"></span></td>
+                        <td class="num"><input asp-for="Input.Lines[i].DiscountPercent" type="number" step="0.01" min="0" max="100" class="short num" /><span asp-validation-for="Input.Lines[i].DiscountPercent" class="field-error"></span></td>
+                        <td class="num">@(previewLine?.LineTotal.ToString("N2"))</td>
+                        <td><button type="submit" name="action" value="removeLine-@i" formnovalidate>Remove</button></td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr><td colspan="8"><button type="submit" name="action" value="addLine" formnovalidate>Add line</button></td></tr>
+                <tr><td colspan="6" class="num">Subtotal</td><td class="num">@(Model.Preview?.Subtotal.ToString("N2"))</td><td></td></tr>
+                <tr><td colspan="6" class="num">Tax</td><td class="num">@(Model.Preview?.TaxAmount.ToString("N2"))</td><td></td></tr>
+                <tr class="total"><td colspan="6" class="num">Total</td><td class="num">@(Model.Preview?.Total.ToString("N2"))</td><td></td></tr>
+            </tfoot>
+        </table>
+        <p class="muted">Totals update when you add or remove a line or save. Prices and costs are copied from the product when the order is saved.</p>
+    </section>
+
+    <div class="form-actions">
+        @if (Model.IsNew)
+        {
+            <a asp-action="Index" class="btn">Cancel</a>
+        }
+        else
+        {
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn">Cancel</a>
+        }
+        <button type="submit" name="action" value="save" class="primary">@(Model.IsNew ? "Save draft" : "Save")</button>
+    </div>
+</form>

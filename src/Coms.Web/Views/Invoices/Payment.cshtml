@@ -1,0 +1,45 @@
+@model PaymentModel
+@{
+    Invoice i = Model.Invoice!;
+    ViewData["Title"] = "Record payment " + i.InvoiceNumber;
+    ViewData["Nav"] = "Invoices";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Invoices</a> &rsaquo; <a href=\"" + Url.Action("Details", new { id = i.Id }) + "\">" + i.InvoiceNumber + "</a> &rsaquo; Payment";
+}
+
+<form asp-action="Payment" method="post" class="narrow">
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <input type="hidden" asp-for="InvoiceId" />
+    <input type="hidden" asp-for="RowVersion" />
+
+    <section class="panel">
+        <table class="def">
+            <tr><th>Invoice</th><td class="mono">@i.InvoiceNumber</td></tr>
+            <tr><th>Status</th><td>@i.Status</td></tr>
+            <tr><th>Total</th><td class="num">@i.Total.ToString("N2")</td></tr>
+            <tr><th>Paid so far</th><td class="num">@i.AmountPaid.ToString("N2")</td></tr>
+            <tr><th>Balance</th><td class="num"><strong>@i.Balance.ToString("N2")</strong></td></tr>
+        </table>
+
+        <div class="form-grid">
+            <label asp-for="Amount">Amount *</label>
+            <div><input asp-for="Amount" type="number" step="0.01" min="0.01" max="@i.Balance" class="short num" autofocus /><span asp-validation-for="Amount" class="field-error"></span></div>
+
+            <label asp-for="PaidDate">Paid date *</label>
+            <div><input asp-for="PaidDate" type="date" class="short" /><span asp-validation-for="PaidDate" class="field-error"></span></div>
+
+            <label asp-for="Method">Method *</label>
+            <div><select asp-for="Method" asp-items="Html.GetEnumSelectList<PaymentMethod>()" class="short"></select></div>
+
+            <label asp-for="Reference">Reference</label>
+            <div><input asp-for="Reference" maxlength="50" placeholder="Cheque or transaction number" /><span asp-validation-for="Reference" class="field-error"></span></div>
+
+            <label asp-for="Notes">Notes</label>
+            <div><input asp-for="Notes" maxlength="500" /><span asp-validation-for="Notes" class="field-error"></span></div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <a asp-action="Details" asp-route-id="@i.Id" class="btn">Cancel</a>
+        <button type="submit" class="primary">Record payment</button>
+    </div>
+</form>

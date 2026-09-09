@@ -1,0 +1,88 @@
+@model StatementModel
+@{
+    Customer c = Model.Customer;
+    ViewData["Title"] = "Statement " + c.CustomerNumber + " " + c.Name;
+    ViewData["Nav"] = "Customers";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Customers</a> &rsaquo; <a href=\"" + Url.Action("Details", new { id = c.Id }) + "\">" + c.CustomerNumber + "</a> &rsaquo; Statement";
+    decimal openTotal = Model.Invoices.Where(i => i.Status == InvoiceStatus.Open || i.Status == InvoiceStatus.PartiallyPaid).Sum(i => i.Balance);
+}
+
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a asp-controller="Invoices" asp-action="Index" asp-route-customerId="@c.Id" class="btn">All invoices</a>
+        <a asp-controller="Orders" asp-action="Index" asp-route-customerId="@c.Id" class="btn">All orders</a>
+    </div>
+</div>
+
+<div class="columns">
+    <section class="panel">
+        <h2>Customer</h2>
+        <table class="def">
+            <tr><th>Number</th><td class="mono">@c.CustomerNumber</td></tr>
+            <tr><th>Name</th><td>@c.Name</td></tr>
+            <tr><th>Billing address</th><td>@c.BillingAddress</td></tr>
+            <tr><th>Payment terms</th><td>@c.PaymentTermsDays days</td></tr>
+            <tr><th>Credit limit</th><td class="num">@(c.CreditLimit.HasValue ? c.CreditLimit.Value.ToString("N2") : "None")</td></tr>
+        </table>
+    </section>
+    <section class="panel">
+        <h2>Balance</h2>
+        <table class="def">
+            <tr><th>Open invoices</th><td class="num">@(Model.Balance?.OpenInvoiceCount)</td></tr>
+            <tr><th>Outstanding</th><td class="num"><strong>@openTotal.ToString("N2")</strong></td></tr>
+            <tr><th>Overdue</th><td class="num @((Model.Balance?.OverdueBalance ?? 0) > 0 ? "warn" : "")">@(Model.Balance?.OverdueBalance.ToString("N2"))</td></tr>
+            <tr><th>Committed orders</th><td class="num">@(Model.Balance?.CommittedTotal.ToString("N2"))</td></tr>
+            <tr><th>Credit available</th><td class="num">@(Model.Balance?.CreditAvailable?.ToString("N2") ?? "No limit")</td></tr>
+        </table>
+    </section>
+</div>
+
+<section class="panel">
+    <h2>Invoices</h2>
+    <table class="grid">
+        <thead><tr><th>Invoice</th><th>Order</th><th>Issued</th><th>Due</th><th>Status</th><th class="num">Total</th><th class="num">Paid</th><th class="num">Balance</th><th class="num">Overdue</th></tr></thead>
+        <tbody>
+            @foreach (InvoiceSummary i in Model.Invoices)
+            {
+                <tr class="@(i.Status == InvoiceStatus.Void ? "row-muted" : "")">
+                    <td class="mono"><a asp-controller="Invoices" asp-action="Details" asp-route-id="@i.InvoiceId">@i.InvoiceNumber</a></td>
+                    <td class="mono">@i.OrderNumber</td>
+                    <td class="date">@i.IssuedDate.ToString("yyyy-MM-dd")</td>
+                    <td class="date">@i.DueDate.ToString("yyyy-MM-dd")</td>
+                    <td class="status-@i.Status.ToString().ToLowerInvariant()">@i.Status</td>
+                    <td class="num">@i.Total.ToString("N2")</td>
+                    <td class="num">@i.AmountPaid.ToString("N2")</td>
+                    <td class="num">@i.Balance.ToString("N2")</td>
+                    <td class="num @(i.DaysOverdue > 0 ? "warn" : "")">@(i.DaysOverdue > 0 ? i.DaysOverdue + " d" : "")</td>
+                </tr>
+            }
+            @if (Model.Invoices.Count == 0)
+            {
+                <tr><td colspan="9" class="muted">No invoices.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel">
+    <h2>Payments</h2>
+    <table class="grid">
+        <thead><tr><th>Date</th><th>Method</th><th>Reference</th><th class="num">Amount</th><th>Recorded by</th></tr></thead>
+        <tbody>
+            @foreach (Payment p in Model.Payments)
+            {
+                <tr>
+                    <td class="date">@p.PaidDate.ToString("yyyy-MM-dd")</td>
+                    <td>@p.Method</td>
+                    <td>@p.Reference</td>
+                    <td class="num">@p.Amount.ToString("N2")</td>
+                    <td>@p.CreatedBy</td>
+                </tr>
+            }
+            @if (Model.Payments.Count == 0)
+            {
+                <tr><td colspan="5" class="muted">No payments.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
