@@ -65,8 +65,10 @@ Detailed setup, configuration and architecture notes live in [docs/](docs/).
 ## Status
 
 Under active development. See [docs/architecture.md](docs/architecture.md)
-for design decisions and [docs/ui-style-guide.md](docs/ui-style-guide.md)
-for the interface conventions.
+for design decisions, [docs/database.md](docs/database.md) for the schema,
+numbering, workflow procedures and reporting objects, and
+[docs/ui-style-guide.md](docs/ui-style-guide.md) for the interface
+conventions.
 
 ## License
 
