@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build and unit tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore CustomerOrderManagement.sln
+
+      - name: Build
+        run: dotnet build CustomerOrderManagement.sln --configuration Release --no-restore
+
+      - name: Domain tests
+        run: dotnet test tests/Coms.Domain.Tests --configuration Release --no-build
+
+      - name: Application tests
+        run: dotnet test tests/Coms.Application.Tests --configuration Release --no-build
+
+      - name: Web tests
+        run: dotnet test tests/Coms.Web.Tests --configuration Release --no-build
+
+      - name: Format check
+        run: dotnet format CustomerOrderManagement.sln --verify-no-changes --no-restore
+
+  database:
+    name: Migrations and data tests (SQL Server)
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Ci_Password_2026!"
+        ports:
+          - 1433:1433
+    env:
+      COMS_CONNECTION: "Server=localhost,1433;Database=Coms;User Id=sa;Password=Ci_Password_2026!;TrustServerCertificate=true"
+      COMS_TEST_CONNECTION: "Server=localhost,1433;Database=Coms_Test;User Id=sa;Password=Ci_Password_2026!;TrustServerCertificate=true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Wait for SQL Server
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec "$(docker ps -q --filter ancestor=mcr.microsoft.com/mssql/server:2022-latest)" \
+                 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Ci_Password_2026!" -C -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "SQL Server did not start"; exit 1
+
+      - name: Apply migrations to a clean database
+        run: dotnet run --project tools/Coms.DbMigrator --configuration Release -- --drop --migrate --seed
+
+      - name: Apply migrations again (must be a no-op)
+        run: dotnet run --project tools/Coms.DbMigrator --configuration Release
+
+      - name: Data tests
+        run: dotnet test tests/Coms.Data.Tests --configuration Release

@@ -1,0 +1,51 @@
+@inject Microsoft.Extensions.Hosting.IHostEnvironment Env
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Order Management</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <span class="topbar-title">Customer Order Management</span>
+        <nav class="topbar-menu">
+            <a asp-controller="Home" asp-action="Index">Dashboard</a>
+        </nav>
+        <span class="topbar-user">Not signed in</span>
+    </header>
+
+    <div class="frame">
+        <nav class="sidenav">
+            <div class="sidenav-group">
+                <div class="sidenav-heading">Sales</div>
+                <a asp-controller="Home" asp-action="Index" class="current">Dashboard</a>
+                <span class="sidenav-disabled">Customers</span>
+                <span class="sidenav-disabled">Orders</span>
+                <span class="sidenav-disabled">Invoices</span>
+            </div>
+            <div class="sidenav-group">
+                <div class="sidenav-heading">Stock</div>
+                <span class="sidenav-disabled">Products</span>
+            </div>
+            <div class="sidenav-group">
+                <div class="sidenav-heading">Reports</div>
+                <span class="sidenav-disabled">Sales by month</span>
+                <span class="sidenav-disabled">Receivables aging</span>
+            </div>
+        </nav>
+
+        <main class="content">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="statusbar">
+        <span>Environment: @Env.EnvironmentName</span>
+        <span>Version: @typeof(Program).Assembly.GetName().Version</span>
+        <span>Server time: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</span>
+    </footer>
+</body>
+</html>

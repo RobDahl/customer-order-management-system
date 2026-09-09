@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Coms.DbMigrator</RootNamespace>
+    <Description>Applies the SQL scripts in db/migrations and db/seed to a SQL Server database.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dbup-sqlserver" />
+  </ItemGroup>
+
+  <!-- The scripts live in db/ at the repository root so they are easy to
+       review on GitHub. They are embedded here so the migrator is a single
+       self-contained executable. Resource names become
+       Coms.DbMigrator.Migrations.<file> and Coms.DbMigrator.Seed.<file>. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\db\migrations\*.sql" LinkBase="Migrations" />
+    <EmbeddedResource Include="..\..\db\seed\*.sql" LinkBase="Seed" />
+  </ItemGroup>
+
+</Project>

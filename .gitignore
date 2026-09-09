@@ -1,0 +1,107 @@
+# ---------------------------------------------------------------------------
+# Local planning / working notes (not part of the deliverable)
+# ---------------------------------------------------------------------------
+planning/
+
+# ---------------------------------------------------------------------------
+# Visual Studio / .NET
+# ---------------------------------------------------------------------------
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.swp
+*.rsuser
+
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+[Ll]ogs/
+TestResults/
+artifacts/
+publish/
+*.binlog
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+
+# Build results
+*.pdb
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# ReSharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+.idea/
+
+# Code coverage
+*.coverage
+*.coveragexml
+coverage/
+*.opencover.xml
+*.cobertura.xml
+
+# ---------------------------------------------------------------------------
+# SQL Server / LocalDB
+# ---------------------------------------------------------------------------
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.dacpac
+
+# ---------------------------------------------------------------------------
+# Secrets / environment
+# ---------------------------------------------------------------------------
+appsettings.*.local.json
+appsettings.Development.json
+secrets.json
+.env
+.env.*
+*.pfx
+*.snk
+
+# ---------------------------------------------------------------------------
+# OS
+# ---------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

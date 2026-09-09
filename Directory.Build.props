@@ -1,0 +1,24 @@
+<Project>
+
+  <!-- Settings shared by every project in the solution. Target-framework
+       specific settings (language version, nullable) live in each csproj
+       because the shared libraries must stay consumable by .NET Framework 4.8. -->
+
+  <PropertyGroup>
+    <Authors>Robert Dahl</Authors>
+    <Product>Customer Order Management System</Product>
+    <Copyright>Copyright (c) 2026 Robert Dahl</Copyright>
+    <Version>0.1.0</Version>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Deterministic>true</Deterministic>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+</Project>

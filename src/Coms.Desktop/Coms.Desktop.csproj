@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Coms.Desktop</RootNamespace>
+    <AssemblyName>Coms.Desktop</AssemblyName>
+    <Description>Windows Forms back-office client for order entry and maintenance.</Description>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Coms.Application\Coms.Application.csproj" />
+    <ProjectReference Include="..\Coms.Data\Coms.Data.csproj" />
+    <ProjectReference Include="..\Coms.Domain\Coms.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lets the project build on machines without the .NET Framework targeting pack installed (CI). -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+</Project>
