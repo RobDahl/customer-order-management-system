@@ -1,0 +1,52 @@
+@model Product
+@{
+    ViewData["Title"] = Model.Sku + " " + Model.Name;
+    ViewData["Nav"] = "Products";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Products</a> &rsaquo; " + Model.Sku;
+    bool canEdit = User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Staff);
+    string rowVersion = System.Convert.ToBase64String(Model.RowVersion);
+}
+
+@if (canEdit)
+{
+    <div class="toolbar">
+        <div class="toolbar-actions">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn primary">Edit</a>
+            <a asp-action="AdjustStock" asp-route-id="@Model.Id" class="btn">Adjust stock</a>
+            <form asp-action="SetActive" method="post" class="inline">
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <input type="hidden" name="IsActive" value="@(!Model.IsActive)" />
+                <input type="hidden" name="RowVersion" value="@rowVersion" />
+                <button type="submit">@(Model.IsActive ? "Deactivate" : "Activate")</button>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="columns">
+    <section class="panel">
+        <h2>Product</h2>
+        <table class="def">
+            <tr><th>SKU</th><td class="mono">@Model.Sku</td></tr>
+            <tr><th>Name</th><td>@Model.Name</td></tr>
+            <tr><th>Description</th><td class="pre">@Model.Description</td></tr>
+            <tr><th>Category</th><td>@Model.Category</td></tr>
+            <tr><th>Unit of measure</th><td>@Model.UnitOfMeasure</td></tr>
+            <tr><th>Active</th><td>@(Model.IsActive ? "Yes" : "No")</td></tr>
+            <tr><th>Created</th><td>@Model.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @Model.CreatedBy</td></tr>
+            <tr><th>Updated</th><td>@Model.UpdatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @Model.UpdatedBy</td></tr>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Pricing and stock</h2>
+        <table class="def">
+            <tr><th>Unit price</th><td class="num">@Model.UnitPrice.ToString("N2")</td></tr>
+            <tr><th>Cost price</th><td class="num">@Model.CostPrice.ToString("N2")</td></tr>
+            <tr><th>Unit margin</th><td class="num">@Model.UnitMargin.ToString("N2")</td></tr>
+            <tr><th>Quantity on hand</th><td class="num @(Model.IsLowStock ? "warn" : "")">@Model.QuantityOnHand.ToString("0.###") @Model.UnitOfMeasure</td></tr>
+            <tr><th>Reorder level</th><td class="num">@Model.ReorderLevel.ToString("0.###")</td></tr>
+            <tr><th>Low stock</th><td>@(Model.IsLowStock ? "Yes" : "No")</td></tr>
+        </table>
+    </section>
+</div>

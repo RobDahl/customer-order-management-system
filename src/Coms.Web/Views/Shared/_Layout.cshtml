@@ -1,4 +1,13 @@
-@inject Microsoft.Extensions.Hosting.IHostEnvironment Env
+@inject AppInfo App
+@{
+    string userName = User.Identity?.Name ?? string.Empty;
+    string role = User.IsInRole(Roles.Administrator) ? "Administrator"
+                : User.IsInRole(Roles.Staff) ? "Staff"
+                : User.IsInRole(Roles.ReadOnly) ? "Read only" : string.Empty;
+    string? flash = TempData[Coms.Web.Controllers.ComsController.FlashKey] as string;
+    string flashType = TempData[Coms.Web.Controllers.ComsController.FlashTypeKey] as string ?? "ok";
+    string area = ViewData["Nav"] as string ?? string.Empty;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,40 +21,64 @@
         <span class="topbar-title">Customer Order Management</span>
         <nav class="topbar-menu">
             <a asp-controller="Home" asp-action="Index">Dashboard</a>
+            <a asp-controller="Customers" asp-action="Index">Customers</a>
+            <a asp-controller="Products" asp-action="Index">Products</a>
         </nav>
-        <span class="topbar-user">Not signed in</span>
+        <span class="topbar-user">
+            @userName@(role.Length > 0 ? " (" + role + ")" : "")
+            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                <button type="submit" class="btn-text">Sign out</button>
+            </form>
+        </span>
     </header>
 
     <div class="frame">
         <nav class="sidenav">
             <div class="sidenav-group">
                 <div class="sidenav-heading">Sales</div>
-                <a asp-controller="Home" asp-action="Index" class="current">Dashboard</a>
-                <span class="sidenav-disabled">Customers</span>
+                <a asp-controller="Home" asp-action="Index" class="@(area == "Dashboard" ? "current" : "")">Dashboard</a>
+                <a asp-controller="Customers" asp-action="Index" class="@(area == "Customers" ? "current" : "")">Customers</a>
                 <span class="sidenav-disabled">Orders</span>
                 <span class="sidenav-disabled">Invoices</span>
             </div>
             <div class="sidenav-group">
                 <div class="sidenav-heading">Stock</div>
-                <span class="sidenav-disabled">Products</span>
+                <a asp-controller="Products" asp-action="Index" class="@(area == "Products" ? "current" : "")">Products</a>
+                <a asp-controller="Products" asp-action="Index" asp-route-lowStock="true" asp-route-active="active">Low stock</a>
             </div>
             <div class="sidenav-group">
                 <div class="sidenav-heading">Reports</div>
                 <span class="sidenav-disabled">Sales by month</span>
                 <span class="sidenav-disabled">Receivables aging</span>
             </div>
+            @if (User.IsInRole(Roles.Administrator))
+            {
+                <div class="sidenav-group">
+                    <div class="sidenav-heading">Administration</div>
+                    <span class="sidenav-disabled">Users</span>
+                </div>
+            }
         </nav>
 
         <main class="content">
             <h1 class="page-title">@ViewData["Title"]</h1>
+            @if (ViewData["Breadcrumb"] != null)
+            {
+                <div class="breadcrumb">@Html.Raw(ViewData["Breadcrumb"])</div>
+            }
+            @if (!string.IsNullOrEmpty(flash))
+            {
+                <p class="flash flash-@flashType">@flash</p>
+            }
             @RenderBody()
         </main>
     </div>
 
     <footer class="statusbar">
-        <span>Environment: @Env.EnvironmentName</span>
-        <span>Version: @typeof(Program).Assembly.GetName().Version</span>
-        <span>Server time: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</span>
+        <span>Environment: @App.EnvironmentName</span>
+        <span>Database: @App.DatabaseName</span>
+        <span>Version: @App.Version</span>
+        <span>Server time: @App.ServerTime.ToString("yyyy-MM-dd HH:mm")</span>
     </footer>
 </body>
 </html>

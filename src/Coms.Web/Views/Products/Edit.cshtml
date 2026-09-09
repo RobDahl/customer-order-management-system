@@ -1,0 +1,14 @@
+@model ProductFormModel
+@{
+    ViewData["Title"] = "Edit " + Model.Product.Sku;
+    ViewData["Nav"] = "Products";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Products</a> &rsaquo; <a href=\"" + Url.Action("Details", new { id = Model.Product.Id }) + "\">" + Model.Product.Sku + "</a> &rsaquo; Edit";
+}
+
+<form asp-action="Edit" asp-route-id="@Model.Product.Id" method="post">
+    <partial name="_ProductForm" model="Model" />
+    <div class="form-actions">
+        <a asp-action="Details" asp-route-id="@Model.Product.Id" class="btn">Cancel</a>
+        <button type="submit" class="primary">Save</button>
+    </div>
+</form>

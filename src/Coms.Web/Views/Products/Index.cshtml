@@ -1,0 +1,75 @@
+@model ProductListModel
+@{
+    ViewData["Title"] = Model.LowStock ? "Low stock" : "Products";
+    ViewData["Nav"] = "Products";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="Search">Search</label>
+        <input type="text" id="Search" name="search" value="@Model.Search" placeholder="SKU or name" />
+        <label for="Category">Category</label>
+        <select id="Category" name="category">
+            <option value="">All</option>
+            @foreach (string category in Model.Categories)
+            {
+                <option value="@category" selected="@(Model.Category == category)">@category</option>
+            }
+        </select>
+        <label for="Active">Show</label>
+        <select id="Active" name="active">
+            <option value="active" selected="@(Model.Active == "active")">Active</option>
+            <option value="inactive" selected="@(Model.Active == "inactive")">Inactive</option>
+            <option value="" selected="@(string.IsNullOrEmpty(Model.Active))">All</option>
+        </select>
+        <label><input type="checkbox" name="lowStock" value="true" checked="@Model.LowStock" /> Low stock only</label>
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Desc.ToString().ToLowerInvariant()" />
+        <button type="submit">Search</button>
+        <a asp-action="Index" class="btn">Clear</a>
+    </form>
+    @if (User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Staff))
+    {
+        <div class="toolbar-actions">
+            <a asp-action="Create" class="btn primary">New product</a>
+        </div>
+    }
+</div>
+
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@Html.SortLink("SKU", "sku")</th>
+            <th>@Html.SortLink("Name", "name")</th>
+            <th>@Html.SortLink("Category", "category")</th>
+            <th>Unit</th>
+            <th class="num">@Html.SortLink("Price", "price")</th>
+            <th class="num">@Html.SortLink("Cost", "cost")</th>
+            <th class="num">@Html.SortLink("On hand", "stock")</th>
+            <th class="num">@Html.SortLink("Reorder", "reorder")</th>
+            <th>@Html.SortLink("Active", "active")</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Product p in Model.Results.Items)
+        {
+            <tr class="@(p.IsLowStock ? "row-warn" : "") @(p.IsActive ? "" : "row-muted")">
+                <td class="mono"><a asp-action="Details" asp-route-id="@p.Id">@p.Sku</a></td>
+                <td>@p.Name</td>
+                <td>@p.Category</td>
+                <td>@p.UnitOfMeasure</td>
+                <td class="num">@p.UnitPrice.ToString("N2")</td>
+                <td class="num">@p.CostPrice.ToString("N2")</td>
+                <td class="num">@p.QuantityOnHand.ToString("0.###")</td>
+                <td class="num">@p.ReorderLevel.ToString("0.###")</td>
+                <td>@(p.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="9" class="muted">No products match.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="PagerModel.From(Model.Results)" />

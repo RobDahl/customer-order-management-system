@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Coms.Web\Coms.Web.csproj" />
+    <ProjectReference Include="..\..\tools\Coms.DbMigrator\Coms.DbMigrator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

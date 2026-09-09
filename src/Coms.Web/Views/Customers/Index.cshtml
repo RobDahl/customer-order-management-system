@@ -1,0 +1,68 @@
+@model CustomerListModel
+@{
+    ViewData["Title"] = "Customers";
+    ViewData["Nav"] = "Customers";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="Search">Search</label>
+        <input type="text" id="Search" name="search" value="@Model.Search" placeholder="Number, name or email" />
+        <label for="Status">Status</label>
+        <select id="Status" name="status">
+            <option value="">All</option>
+            @foreach (CustomerStatus status in System.Enum.GetValues(typeof(CustomerStatus)))
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Desc.ToString().ToLowerInvariant()" />
+        <button type="submit">Search</button>
+        <a asp-action="Index" class="btn">Clear</a>
+    </form>
+    @if (User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Staff))
+    {
+        <div class="toolbar-actions">
+            <a asp-action="Create" class="btn primary">New customer</a>
+        </div>
+    }
+</div>
+
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@Html.SortLink("Number", "number")</th>
+            <th>@Html.SortLink("Name", "name")</th>
+            <th>@Html.SortLink("Contact", "contact")</th>
+            <th>Email</th>
+            <th>@Html.SortLink("City", "city")</th>
+            <th class="num">@Html.SortLink("Terms", "terms")</th>
+            <th class="num">Credit limit</th>
+            <th>@Html.SortLink("Status", "status")</th>
+            <th>@Html.SortLink("Updated", "updated")</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Customer c in Model.Results.Items)
+        {
+            <tr>
+                <td class="mono"><a asp-action="Details" asp-route-id="@c.Id">@c.CustomerNumber</a></td>
+                <td>@c.Name</td>
+                <td>@c.ContactName</td>
+                <td>@c.Email</td>
+                <td>@c.BillingAddress.City</td>
+                <td class="num">@c.PaymentTermsDays</td>
+                <td class="num">@(c.CreditLimit.HasValue ? c.CreditLimit.Value.ToString("N2") : "")</td>
+                <td class="status-@c.Status.ToString().ToLowerInvariant()">@c.Status</td>
+                <td>@c.UpdatedAtUtc.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="9" class="muted">No customers match.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="PagerModel.From(Model.Results)" />

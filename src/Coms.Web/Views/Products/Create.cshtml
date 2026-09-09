@@ -1,0 +1,14 @@
+@model ProductFormModel
+@{
+    ViewData["Title"] = "New product";
+    ViewData["Nav"] = "Products";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Products</a> &rsaquo; New";
+}
+
+<form asp-action="Create" method="post">
+    <partial name="_ProductForm" model="Model" />
+    <div class="form-actions">
+        <a asp-action="Index" class="btn">Cancel</a>
+        <button type="submit" class="primary">Save</button>
+    </div>
+</form>

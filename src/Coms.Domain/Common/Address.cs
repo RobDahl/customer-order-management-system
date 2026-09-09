@@ -28,6 +28,28 @@ namespace Coms.Domain.Common
             && string.IsNullOrWhiteSpace(PostalCode)
             && string.IsNullOrWhiteSpace(Country);
 
+        /// <summary>Trims every part and replaces nulls from model binding with empty strings.</summary>
+        public void Normalize()
+        {
+            Line1 = (Line1 ?? string.Empty).Trim();
+            Line2 = TrimToNull(Line2);
+            City = (City ?? string.Empty).Trim();
+            Region = TrimToNull(Region);
+            PostalCode = TrimToNull(PostalCode);
+            Country = (Country ?? string.Empty).Trim();
+        }
+
+        private static string? TrimToNull(string? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            string trimmed = value.Trim();
+            return trimmed.Length == 0 ? null : trimmed;
+        }
+
         public Address Copy()
         {
             return new Address

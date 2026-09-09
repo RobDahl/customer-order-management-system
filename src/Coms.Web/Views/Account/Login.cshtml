@@ -1,0 +1,19 @@
+@model LoginModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign in";
+}
+
+<form asp-action="Login" method="post" class="form">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="All" class="validation-summary"></div>
+    <div class="form-grid">
+        <label asp-for="UserName">User name</label>
+        <input asp-for="UserName" autofocus autocomplete="username" />
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" type="password" autocomplete="current-password" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="primary">Sign in</button>
+    </div>
+</form>

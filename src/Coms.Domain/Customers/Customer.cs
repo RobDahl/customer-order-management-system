@@ -36,10 +36,13 @@ namespace Coms.Domain.Customers
         /// <summary>Address goods ship to: the shipping address when set, otherwise billing.</summary>
         public Address EffectiveShippingAddress => ShippingAddress ?? BillingAddress;
 
-        /// <summary>Trims text and turns an all-blank shipping address into null.</summary>
+        /// <summary>Trims text and turns an all-blank shipping address into null. Tolerates nulls from model binding.</summary>
         public void Normalize()
         {
-            Name = Name.Trim();
+            Name = (Name ?? string.Empty).Trim();
+            BillingAddress ??= new Address();
+            BillingAddress.Normalize();
+            ShippingAddress?.Normalize();
             ContactName = TrimToNull(ContactName);
             Email = TrimToNull(Email);
             Phone = TrimToNull(Phone);

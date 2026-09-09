@@ -1,0 +1,173 @@
+@model CustomerDetailsModel
+@{
+    Customer c = Model.Customer;
+    ViewData["Title"] = c.CustomerNumber + " " + c.Name;
+    ViewData["Nav"] = "Customers";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Customers</a> &rsaquo; " + c.CustomerNumber;
+    bool canEdit = User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Staff);
+    string rowVersion = System.Convert.ToBase64String(c.RowVersion);
+}
+
+@if (canEdit)
+{
+    <div class="toolbar">
+        <div class="toolbar-actions">
+            <a asp-action="Edit" asp-route-id="@c.Id" class="btn primary">Edit</a>
+            @if (c.Status != CustomerStatus.Active)
+            {
+                <form asp-action="ChangeStatus" method="post" class="inline">
+                    <input type="hidden" name="Id" value="@c.Id" />
+                    <input type="hidden" name="Status" value="@CustomerStatus.Active" />
+                    <input type="hidden" name="RowVersion" value="@rowVersion" />
+                    <button type="submit">Activate</button>
+                </form>
+            }
+            @if (c.Status != CustomerStatus.OnHold)
+            {
+                <form asp-action="ChangeStatus" method="post" class="inline">
+                    <input type="hidden" name="Id" value="@c.Id" />
+                    <input type="hidden" name="Status" value="@CustomerStatus.OnHold" />
+                    <input type="hidden" name="RowVersion" value="@rowVersion" />
+                    <button type="submit">Put on hold</button>
+                </form>
+            }
+            @if (c.Status != CustomerStatus.Inactive)
+            {
+                <form asp-action="ChangeStatus" method="post" class="inline" onsubmit="return confirm('Deactivate this customer?');">
+                    <input type="hidden" name="Id" value="@c.Id" />
+                    <input type="hidden" name="Status" value="@CustomerStatus.Inactive" />
+                    <input type="hidden" name="RowVersion" value="@rowVersion" />
+                    <button type="submit">Deactivate</button>
+                </form>
+            }
+        </div>
+    </div>
+}
+
+<div class="columns">
+    <section class="panel">
+        <h2>Details</h2>
+        <table class="def">
+            <tr><th>Number</th><td class="mono">@c.CustomerNumber</td></tr>
+            <tr><th>Name</th><td>@c.Name</td></tr>
+            <tr><th>Status</th><td class="status-@c.Status.ToString().ToLowerInvariant()">@c.Status</td></tr>
+            <tr><th>Contact</th><td>@c.ContactName</td></tr>
+            <tr><th>Email</th><td>@c.Email</td></tr>
+            <tr><th>Phone</th><td>@c.Phone</td></tr>
+            <tr><th>Payment terms</th><td>@c.PaymentTermsDays days</td></tr>
+            <tr><th>Credit limit</th><td class="num">@(c.CreditLimit.HasValue ? c.CreditLimit.Value.ToString("N2") : "None")</td></tr>
+            <tr><th>Billing address</th><td>@c.BillingAddress</td></tr>
+            <tr><th>Shipping address</th><td>@(c.ShippingAddress == null ? "Same as billing" : c.ShippingAddress.ToString())</td></tr>
+            <tr><th>Notes</th><td class="pre">@c.Notes</td></tr>
+            <tr><th>Created</th><td>@c.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @c.CreatedBy</td></tr>
+            <tr><th>Updated</th><td>@c.UpdatedAtUtc.ToString("yyyy-MM-dd HH:mm") by @c.UpdatedBy</td></tr>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Account</h2>
+        @if (Model.Balance == null)
+        {
+            <p class="muted">No balance information.</p>
+        }
+        else
+        {
+            CustomerBalance b = Model.Balance;
+            <table class="def">
+                <tr><th>Open invoices</th><td class="num">@b.OpenInvoiceCount</td></tr>
+                <tr><th>Outstanding</th><td class="num">@b.OutstandingBalance.ToString("N2")</td></tr>
+                <tr><th>Overdue</th><td class="num @(b.OverdueBalance > 0 ? "warn" : "")">@b.OverdueBalance.ToString("N2")</td></tr>
+                <tr><th>Oldest due date</th><td>@(b.OldestDueDate.HasValue ? b.OldestDueDate.Value.ToString("yyyy-MM-dd") : "")</td></tr>
+                <tr><th>Committed orders</th><td class="num">@b.CommittedOrderCount (@b.CommittedTotal.ToString("N2"))</td></tr>
+                <tr><th>Exposure</th><td class="num">@b.Exposure.ToString("N2")</td></tr>
+                <tr><th>Credit available</th><td class="num @(b.CreditAvailable < 0 ? "err" : "")">@(b.CreditAvailable.HasValue ? b.CreditAvailable.Value.ToString("N2") : "No limit")</td></tr>
+            </table>
+        }
+    </section>
+</div>
+
+<section class="panel">
+    <h2>Recent orders</h2>
+    <table class="grid">
+        <thead>
+            <tr><th>Order</th><th>Date</th><th>Status</th><th>Reference</th><th class="num">Lines</th><th class="num">Total</th><th>Invoice</th></tr>
+        </thead>
+        <tbody>
+            @foreach (OrderSummary o in Model.RecentOrders)
+            {
+                <tr>
+                    <td class="mono">@o.OrderNumber</td>
+                    <td>@o.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td class="status-@o.Status.ToString().ToLowerInvariant()">@o.Status</td>
+                    <td>@o.CustomerReference</td>
+                    <td class="num">@o.LineCount</td>
+                    <td class="num">@o.Total.ToString("N2")</td>
+                    <td class="mono">@o.InvoiceNumber</td>
+                </tr>
+            }
+            @if (Model.RecentOrders.Count == 0)
+            {
+                <tr><td colspan="7" class="muted">No orders.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel">
+    <h2>Invoices</h2>
+    <table class="grid">
+        <thead>
+            <tr><th>Invoice</th><th>Order</th><th>Issued</th><th>Due</th><th>Status</th><th class="num">Total</th><th class="num">Paid</th><th class="num">Balance</th><th class="num">Days overdue</th></tr>
+        </thead>
+        <tbody>
+            @foreach (InvoiceSummary i in Model.RecentInvoices)
+            {
+                <tr>
+                    <td class="mono">@i.InvoiceNumber</td>
+                    <td class="mono">@i.OrderNumber</td>
+                    <td>@i.IssuedDate.ToString("yyyy-MM-dd")</td>
+                    <td>@i.DueDate.ToString("yyyy-MM-dd")</td>
+                    <td class="status-@i.Status.ToString().ToLowerInvariant()">@i.Status</td>
+                    <td class="num">@i.Total.ToString("N2")</td>
+                    <td class="num">@i.AmountPaid.ToString("N2")</td>
+                    <td class="num">@i.Balance.ToString("N2")</td>
+                    <td class="num @(i.DaysOverdue > 0 ? "warn" : "")">@(i.DaysOverdue > 0 ? i.DaysOverdue.ToString() : "")</td>
+                </tr>
+            }
+            @if (Model.RecentInvoices.Count == 0)
+            {
+                <tr><td colspan="9" class="muted">No invoices.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel">
+    <h2>Notes</h2>
+    @if (canEdit)
+    {
+        <form asp-action="AddNote" method="post" class="note-form">
+            <input type="hidden" name="EntityType" value="@NoteEntityType.Customer" />
+            <input type="hidden" name="EntityId" value="@c.Id" />
+            <textarea name="Body" rows="2" placeholder="Add a note"></textarea>
+            <button type="submit">Add note</button>
+        </form>
+    }
+    <table class="grid">
+        <thead><tr><th>When</th><th>Who</th><th>Note</th></tr></thead>
+        <tbody>
+            @foreach (Note n in Model.Notes)
+            {
+                <tr>
+                    <td>@n.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@n.CreatedBy</td>
+                    <td class="pre">@n.Body</td>
+                </tr>
+            }
+            @if (Model.Notes.Count == 0)
+            {
+                <tr><td colspan="3" class="muted">No notes.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

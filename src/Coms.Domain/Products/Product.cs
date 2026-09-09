@@ -34,10 +34,10 @@ namespace Coms.Domain.Products
 
         public void Normalize()
         {
-            Sku = Sku.Trim().ToUpperInvariant();
-            Name = Name.Trim();
-            Category = Category.Trim();
-            UnitOfMeasure = UnitOfMeasure.Trim().ToUpperInvariant();
+            Sku = (Sku ?? string.Empty).Trim().ToUpperInvariant();
+            Name = (Name ?? string.Empty).Trim();
+            Category = (Category ?? string.Empty).Trim();
+            UnitOfMeasure = (UnitOfMeasure ?? string.Empty).Trim().ToUpperInvariant();
             Description = string.IsNullOrWhiteSpace(Description) ? null : Description!.Trim();
         }
 

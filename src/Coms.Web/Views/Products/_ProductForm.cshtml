@@ -1,0 +1,64 @@
+@model ProductFormModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+<input type="hidden" asp-for="Product.Id" />
+<input type="hidden" asp-for="Product.RowVersion" />
+
+<div class="columns">
+    <section class="panel">
+        <h2>Product</h2>
+        <div class="form-grid">
+            <label asp-for="Product.Sku">SKU *</label>
+            <div><input asp-for="Product.Sku" maxlength="40" class="mono" /><span asp-validation-for="Product.Sku" class="field-error"></span></div>
+
+            <label asp-for="Product.Name">Name *</label>
+            <div><input asp-for="Product.Name" maxlength="200" /><span asp-validation-for="Product.Name" class="field-error"></span></div>
+
+            <label asp-for="Product.Description">Description</label>
+            <div><textarea asp-for="Product.Description" rows="3" maxlength="1000"></textarea></div>
+
+            <label asp-for="Product.Category">Category *</label>
+            <div>
+                <input asp-for="Product.Category" maxlength="60" list="categories" />
+                <datalist id="categories">
+                    @foreach (string category in Model.Categories)
+                    {
+                        <option value="@category"></option>
+                    }
+                </datalist>
+                <span asp-validation-for="Product.Category" class="field-error"></span>
+            </div>
+
+            <label asp-for="Product.UnitOfMeasure">Unit of measure *</label>
+            <div><input asp-for="Product.UnitOfMeasure" maxlength="10" class="short" /><span asp-validation-for="Product.UnitOfMeasure" class="field-error"></span></div>
+
+            <label asp-for="Product.IsActive">Active</label>
+            <div><input asp-for="Product.IsActive" type="checkbox" /></div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Pricing and stock</h2>
+        <div class="form-grid">
+            <label asp-for="Product.UnitPrice">Unit price *</label>
+            <div><input asp-for="Product.UnitPrice" type="number" step="0.01" min="0" class="short" /><span asp-validation-for="Product.UnitPrice" class="field-error"></span></div>
+
+            <label asp-for="Product.CostPrice">Cost price</label>
+            <div><input asp-for="Product.CostPrice" type="number" step="0.01" min="0" class="short" /><span asp-validation-for="Product.CostPrice" class="field-error"></span></div>
+
+            @if (Model.Product.IsNew)
+            {
+                <label asp-for="Product.QuantityOnHand">Opening quantity</label>
+                <div><input asp-for="Product.QuantityOnHand" type="number" step="0.001" class="short" /></div>
+            }
+            else
+            {
+                <label>Quantity on hand</label>
+                <div class="muted">@Model.Product.QuantityOnHand.ToString("0.###") (use Adjust stock to change)<input type="hidden" asp-for="Product.QuantityOnHand" /></div>
+            }
+
+            <label asp-for="Product.ReorderLevel">Reorder level</label>
+            <div><input asp-for="Product.ReorderLevel" type="number" step="0.001" min="0" class="short" /><span asp-validation-for="Product.ReorderLevel" class="field-error"></span></div>
+        </div>
+    </section>
+</div>

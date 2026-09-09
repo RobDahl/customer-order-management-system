@@ -57,7 +57,19 @@ dotnet run --project tools/Coms.DbMigrator -- --help
 dotnet run --project src/Coms.Web
 ```
 
-Browse to <https://localhost:7180>.
+Browse to <https://localhost:7180>. On first start the application creates
+the Identity tables in the `auth` schema and, when no users exist yet, the
+seed users from `appsettings.json`:
+
+| User     | Password      | Role          | Can |
+| -------- | ------------- | ------------- | --- |
+| `admin`  | `Admin#2026`  | Administrator | Everything, including user administration |
+| `staff`  | `Staff#2026`  | Staff         | Create and change customers, products, orders, invoices |
+| `viewer` | `Viewer#2026` | ReadOnly      | View and export only |
+
+These are development defaults. For anything beyond a workstation, override
+the `Identity:SeedUsers` section (user secrets or environment variables)
+before the first start, or change the passwords after signing in.
 
 ## 5. Run the desktop client
 

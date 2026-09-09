@@ -71,10 +71,12 @@ namespace Coms.Domain.Orders
             OrderDate = OrderDate.Date;
             RequiredDate = RequiredDate?.Date;
 
+            ShipTo?.Normalize();
+
             foreach (OrderLine line in Lines)
             {
-                line.Description = line.Description.Trim();
-                line.Sku = line.Sku.Trim().ToUpperInvariant();
+                line.Description = (line.Description ?? string.Empty).Trim();
+                line.Sku = (line.Sku ?? string.Empty).Trim().ToUpperInvariant();
             }
         }
 

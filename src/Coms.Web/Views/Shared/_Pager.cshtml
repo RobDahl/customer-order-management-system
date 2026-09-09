@@ -1,0 +1,39 @@
+@model PagerModel
+<div class="pager">
+    <span class="pager-info">
+        @if (Model.TotalCount == 0)
+        {
+            <text>No records</text>
+        }
+        else
+        {
+            <text>Showing @Model.FirstItem&ndash;@Model.LastItem of @Model.TotalCount.ToString("N0")</text>
+        }
+    </span>
+    @if (Model.TotalPages > 1)
+    {
+        <span class="pager-links">
+            @if (Model.Page > 1)
+            {
+                <a href="@Html.PageUrl(1)">First</a>
+                <a href="@Html.PageUrl(Model.Page - 1)">Prev</a>
+            }
+            else
+            {
+                <span class="muted">First</span>
+                <span class="muted">Prev</span>
+            }
+            <span>Page @Model.Page of @Model.TotalPages</span>
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="@Html.PageUrl(Model.Page + 1)">Next</a>
+                <a href="@Html.PageUrl(Model.TotalPages)">Last</a>
+            }
+            else
+            {
+                <span class="muted">Next</span>
+                <span class="muted">Last</span>
+            }
+        </span>
+    }
+</div>

@@ -206,6 +206,12 @@ table.grid td.num,
 table.grid th.num {
     text-align: right;
     font-family: Consolas, "Courier New", monospace;
+    white-space: nowrap;
+}
+
+table.grid td.mono,
+table.grid td.date {
+    white-space: nowrap;
 }
 
 /* Forms */
@@ -277,4 +283,231 @@ button.primary,
     .content {
         padding: 0;
     }
+}
+
+/* Layout blocks added with the customer and product screens */
+
+.breadcrumb {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: -4px 0 8px 0;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+}
+
+.flash {
+    margin: 0 0 10px 0;
+    padding: 4px 8px;
+    border-left: 4px solid var(--state-ok);
+    background: #F1F8F1;
+}
+
+.flash-error {
+    border-left-color: var(--state-error);
+    background: #FBF0F1;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.filters {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filters label {
+    margin-left: 6px;
+}
+
+.filters input[type="text"] {
+    width: 220px;
+}
+
+.filters select {
+    width: auto;
+}
+
+.inline {
+    display: inline;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    text-decoration: underline;
+    padding: 0 0 0 8px;
+    cursor: pointer;
+}
+
+.columns {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.columns > .panel {
+    flex: 1 1 380px;
+    min-width: 0;
+}
+
+.panel {
+    border: 1px solid var(--border);
+    padding: 8px 12px 12px 12px;
+    margin-bottom: 12px;
+    background: var(--bg-panel);
+}
+
+.panel h2 {
+    margin-top: 0;
+}
+
+.narrow {
+    max-width: 640px;
+}
+
+table.def {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.def th,
+table.def td {
+    padding: 3px 8px;
+    border-bottom: 1px solid #EEEEEE;
+    vertical-align: top;
+    text-align: left;
+}
+
+table.def th {
+    width: 160px;
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+table.def td.num {
+    text-align: left;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.pre {
+    white-space: pre-wrap;
+}
+
+.warn {
+    color: var(--state-warn);
+}
+
+.err {
+    color: var(--state-error);
+}
+
+.row-warn td:nth-child(7) {
+    color: var(--state-warn);
+    font-weight: bold;
+}
+
+.row-muted td {
+    color: var(--text-muted);
+}
+
+.status-active, .status-paid, .status-fulfilled, .status-invoiced {
+    color: var(--state-ok);
+}
+
+.status-onhold, .status-partiallypaid, .status-submitted {
+    color: var(--state-warn);
+}
+
+.status-inactive, .status-void, .status-cancelled {
+    color: var(--text-muted);
+}
+
+.validation-summary ul {
+    margin: 0 0 8px 0;
+    padding: 4px 8px 4px 24px;
+    border-left: 4px solid var(--state-error);
+    color: var(--state-error);
+}
+
+.validation-summary.validation-summary-valid {
+    display: none;
+}
+
+.form-grid > div {
+    min-width: 0;
+}
+
+input.short {
+    width: 140px;
+}
+
+.sort {
+    color: var(--text);
+}
+
+.sort-current {
+    text-decoration: underline;
+}
+
+.pager {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 12px;
+}
+
+.pager-links a,
+.pager-links span {
+    margin-left: 8px;
+}
+
+.note-form {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.note-form textarea {
+    flex: 1 1 auto;
+}
+
+.note-form button {
+    flex: 0 0 auto;
+}
+
+.auth-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 60px;
+}
+
+.auth-panel {
+    width: 360px;
+    border: 1px solid var(--border);
+    padding: 12px 16px 16px 16px;
+    background: var(--bg-panel);
+}
+
+.auth-panel .form-grid {
+    grid-template-columns: 100px 1fr;
 }
