@@ -85,6 +85,31 @@ and stored procedures where it belongs in the database, not in C# loops.
 - Enums are stored as their names. Parameters are passed as strings
   explicitly; Dapper maps the string columns back to enums on read.
 
+### Application services
+
+`Coms.Application` holds one service per area (customers, products, orders,
+invoices, notes, reports, CSV import, CSV export), each behind an
+interface. A service:
+
+- normalises and validates input, returning `Result` with field-level
+  errors rather than throwing;
+- enforces the business rules that span records: the order state machine,
+  customer status, product status, the credit check on approval, payment
+  against balance, void only when unpaid;
+- checks the caller's `rowversion` before changing anything and reports a
+  conflict when it is stale;
+- writes an audit line through `ILogger` for every state change.
+
+Orders are built from `OrderInput`, which is what the screen collects.
+The service looks up each product, snapshots SKU, description, price and
+cost onto the line, applies the configured tax rate and computes totals.
+The same code path serves "preview totals" without saving.
+
+The CSV importer reads every row into all-string row objects, reports each
+bad cell with its row number and field, and only when the whole file is
+clean writes everything inside one unit of work. Exports use the same row
+layout, so an exported file imports unchanged.
+
 ### Authentication
 
 - Web: ASP.NET Core Identity with three roles: Administrator, Staff, ReadOnly.
