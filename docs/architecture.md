@@ -65,6 +65,26 @@ applied by `tools/Coms.DbMigrator` (DbUp). Scripts are never edited after
 they are committed; changes are new scripts. Reporting is done through views
 and stored procedures where it belongs in the database, not in C# loops.
 
+### Data access shape
+
+- `IDbSession` (implemented by `DbSession`) holds one connection and, when
+  asked, one transaction. It is scoped per web request or per desktop
+  action and also implements the domain's `IUnitOfWork`, so an application
+  service can wrap several repository calls in one transaction without
+  knowing anything about ADO.NET.
+- Repositories take the session, write explicit SQL, and return domain
+  entities or `null`. List queries return `PagedResult<T>` and accept a
+  logical sort key that is mapped through a per-repository whitelist, so
+  no user input reaches an `ORDER BY`.
+- Updates carry the row's `rowversion` in the `WHERE` clause and return
+  `false` when no row matched; the service turns that into a conflict
+  result for the user.
+- Calls to the workflow stored procedures return `Result` directly: the
+  `THROW` numbers in the 50000 range are mapped to `ErrorCode` values, and
+  anything else is a genuine fault that propagates.
+- Enums are stored as their names. Parameters are passed as strings
+  explicitly; Dapper maps the string columns back to enums on read.
+
 ### Authentication
 
 - Web: ASP.NET Core Identity with three roles: Administrator, Staff, ReadOnly.

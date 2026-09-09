@@ -1,9 +1,6 @@
 using System;
 using System.Linq;
-using System.Reflection;
-using DbUp;
 using DbUp.Engine;
-using DbUp.Helpers;
 
 namespace Coms.DbMigrator
 {
@@ -11,9 +8,6 @@ namespace Coms.DbMigrator
     {
         private const string DefaultConnection =
             "Server=(localdb)\\MSSQLLocalDB;Database=Coms;Integrated Security=true;TrustServerCertificate=true";
-
-        private const string MigrationPrefix = "Coms.DbMigrator.Migrations.";
-        private const string SeedPrefix = "Coms.DbMigrator.Seed.";
 
         private static int Main(string[] args)
         {
@@ -45,15 +39,15 @@ namespace Coms.DbMigrator
             {
                 if (options.Drop)
                 {
-                    DropDatabase.For.SqlDatabase(connectionString);
+                    MigrationRunner.Drop(connectionString);
                     Console.WriteLine("Database dropped.");
                 }
 
                 if (options.Migrate)
                 {
-                    EnsureDatabase.For.SqlDatabase(connectionString);
+                    MigrationRunner.EnsureCreated(connectionString);
 
-                    if (!Run(BuildMigrationUpgrader(connectionString), "Migrations"))
+                    if (!Report(MigrationRunner.Migrate(connectionString, logToConsole: true), "Migrations"))
                     {
                         return 1;
                     }
@@ -61,7 +55,7 @@ namespace Coms.DbMigrator
 
                 if (options.Seed)
                 {
-                    if (!Run(BuildSeedUpgrader(connectionString), "Seed"))
+                    if (!Report(MigrationRunner.Seed(connectionString, logToConsole: true), "Seed"))
                     {
                         return 1;
                     }
@@ -77,39 +71,8 @@ namespace Coms.DbMigrator
             }
         }
 
-        private static UpgradeEngine BuildMigrationUpgrader(string connectionString)
+        private static bool Report(DatabaseUpgradeResult result, string label)
         {
-            return DeployChanges.To
-                .SqlDatabase(connectionString)
-                .WithScriptsEmbeddedInAssembly(
-                    Assembly.GetExecutingAssembly(),
-                    name => name.StartsWith(MigrationPrefix, StringComparison.Ordinal))
-                .WithTransactionPerScript()
-                .JournalToSqlTable("dbo", "SchemaVersions")
-                .LogToConsole()
-                .Build();
-        }
-
-        private static UpgradeEngine BuildSeedUpgrader(string connectionString)
-        {
-            // Seed scripts are written to be re-runnable, so they are never
-            // journaled. Running --seed twice must leave the data unchanged.
-            return DeployChanges.To
-                .SqlDatabase(connectionString)
-                .WithScriptsEmbeddedInAssembly(
-                    Assembly.GetExecutingAssembly(),
-                    name => name.StartsWith(SeedPrefix, StringComparison.Ordinal))
-                .WithTransactionPerScript()
-                .JournalTo(new NullJournal())
-                .LogToConsole()
-                .Build();
-        }
-
-        private static bool Run(UpgradeEngine upgrader, string label)
-        {
-            Console.WriteLine("--- " + label + " ---");
-            DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-
             if (!result.Successful)
             {
                 Console.Error.WriteLine(label + " failed: " + result.Error?.Message);

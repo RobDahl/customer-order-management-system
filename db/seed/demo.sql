@@ -331,7 +331,10 @@ SELECT l.OrderId,
                      CAST(1 + (o.h1 + m.n * 104729) % 20 AS DECIMAL(18,3)) AS Quantity,
                      CAST(CASE WHEN (o.h2 + m.n) % 10 = 0 THEN 5 + (o.h3 + m.n) % 11 ELSE 0 END AS DECIMAL(5,2)) AS DiscountPercent
                 FROM #Ord o
-                JOIN #Numbers m ON m.n <= 1 + o.h5 % 6) d) l
+                /* A fixed six-row table, not #Numbers: joining a large table on an
+                   inequality invites a scan per order and made this step take minutes. */
+                CROSS JOIN (VALUES (1), (2), (3), (4), (5), (6)) AS m (n)
+               WHERE m.n <= 1 + o.h5 % 6) d) l
   JOIN dbo.Products p ON p.Id = l.ProductId
  WHERE l.dup = 1
  ORDER BY l.OrderId, l.m;

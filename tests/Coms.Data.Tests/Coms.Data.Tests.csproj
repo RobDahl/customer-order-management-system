@@ -11,6 +11,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Coms.Data\Coms.Data.csproj" />
     <ProjectReference Include="..\..\src\Coms.Domain\Coms.Domain.csproj" />
+    <!-- The migrator builds the test database exactly as it builds a real one. -->
+    <ProjectReference Include="..\..\tools\Coms.DbMigrator\Coms.DbMigrator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
