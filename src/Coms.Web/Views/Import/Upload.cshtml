@@ -1,0 +1,62 @@
+@model ImportModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Nav"] = "Import";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">CSV import</a> &rsaquo; " + (Model.Kind == "products" ? "Products" : "Customers");
+}
+
+<form asp-action="Upload" method="post" enctype="multipart/form-data" class="narrow">
+    <div asp-validation-summary="All" class="validation-summary"></div>
+    <input type="hidden" asp-for="Kind" />
+
+    <section class="panel">
+        <div class="form-grid">
+            <label asp-for="File">CSV file *</label>
+            <div><input asp-for="File" type="file" accept=".csv,text/csv" /></div>
+
+            <label asp-for="UpdateExisting">Existing records</label>
+            <div><label><input asp-for="UpdateExisting" type="checkbox" /> Update rows that match an existing @(Model.Kind == "products" ? "SKU" : "customer number") instead of reporting them as errors</label></div>
+        </div>
+        <p class="muted">Required columns: <span class="mono">@string.Join(", ", Model.RequiredColumns)</span>. <a asp-action="Template" asp-route-kind="@Model.Kind">Download template</a> with every column.</p>
+    </section>
+
+    <div class="form-actions">
+        <a asp-action="Index" class="btn">Back</a>
+        <button type="submit" name="action" value="check">Check file</button>
+        <button type="submit" name="action" value="import" class="primary">Import</button>
+    </div>
+</form>
+
+@if (Model.Result != null)
+{
+    var r = Model.Result;
+    <section class="panel">
+        <h2>@(r.Committed ? "Import result" : r.DryRun ? "Check result" : "Result")</h2>
+        <p class="@(r.HasErrors ? "message-error" : "flash")">@r.Summary</p>
+        <table class="def">
+            <tr><th>Rows read</th><td class="num">@r.TotalRows</td></tr>
+            <tr><th>New records</th><td class="num">@r.ToInsert</td></tr>
+            <tr><th>Updated records</th><td class="num">@r.ToUpdate</td></tr>
+            <tr><th>Rows with errors</th><td class="num">@r.RowsWithErrors</td></tr>
+            <tr><th>Written</th><td>@(r.Committed ? "Yes" : "No")</td></tr>
+        </table>
+
+        @if (r.HasErrors)
+        {
+            <h2>Errors</h2>
+            <table class="grid">
+                <thead><tr><th class="num">Row</th><th>Column</th><th>Problem</th></tr></thead>
+                <tbody>
+                    @foreach (var e in r.Errors)
+                    {
+                        <tr>
+                            <td class="num">@(e.RowNumber == 0 ? "file" : e.RowNumber.ToString())</td>
+                            <td class="mono">@e.Field</td>
+                            <td>@e.Message</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+}

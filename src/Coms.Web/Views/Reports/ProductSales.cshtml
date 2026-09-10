@@ -1,0 +1,50 @@
+@model ProductSalesModel
+@{
+    ViewData["Title"] = "Product sales";
+    ViewData["Nav"] = "Reports";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Reports</a> &rsaquo; Product sales";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <partial name="_PeriodFilter" model="Model" />
+        <button type="submit">Run</button>
+    </form>
+    <div class="toolbar-actions">
+        <a asp-action="ProductSales" asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")" asp-route-format="csv" class="btn">Export CSV</a>
+    </div>
+</div>
+<div asp-validation-summary="All" class="validation-summary"></div>
+
+<table class="grid">
+    <thead><tr><th>SKU</th><th>Product</th><th>Category</th><th class="num">Orders</th><th class="num">Quantity</th><th class="num">Revenue</th><th class="num">Cost</th><th class="num">Margin</th><th class="num">Margin %</th></tr></thead>
+    <tbody>
+        @foreach (var r in Model.Rows)
+        {
+            <tr class="@(r.IsActive ? "" : "row-muted")">
+                <td class="mono"><a asp-controller="Products" asp-action="Details" asp-route-id="@r.ProductId">@r.Sku</a></td>
+                <td>@r.Name</td>
+                <td>@r.Category</td>
+                <td class="num">@r.OrderCount</td>
+                <td class="num">@r.QuantitySold.ToString("0.###") @r.UnitOfMeasure</td>
+                <td class="num">@r.Revenue.ToString("N2")</td>
+                <td class="num">@r.Cost.ToString("N2")</td>
+                <td class="num">@r.GrossMargin.ToString("N2")</td>
+                <td class="num">@r.MarginPercent.ToString("0.0")</td>
+            </tr>
+        }
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="9" class="muted">No sales in this period.</td></tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="total">
+            <td colspan="5">Total</td>
+            <td class="num">@Model.Rows.Sum(r => r.Revenue).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.Cost).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.GrossMargin).ToString("N2")</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>

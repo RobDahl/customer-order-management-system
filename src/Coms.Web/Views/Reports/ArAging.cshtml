@@ -1,0 +1,55 @@
+@model ArAgingModel
+@{
+    ViewData["Title"] = "Receivables aging";
+    ViewData["Nav"] = "Reports";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Reports</a> &rsaquo; Receivables aging";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="AsOf">As of</label>
+        <input type="date" id="AsOf" name="asOf" value="@(Model.AsOf?.ToString("yyyy-MM-dd"))" />
+        <button type="submit">Run</button>
+    </form>
+    <div class="toolbar-actions">
+        <a asp-action="ArAging" asp-route-asOf="@Model.AsOf?.ToString("yyyy-MM-dd")" asp-route-format="csv" class="btn">Export CSV</a>
+    </div>
+</div>
+
+<table class="grid">
+    <thead><tr><th>Customer</th><th class="num">Terms</th><th class="num">Invoices</th><th class="num">Not yet due</th><th class="num">1-30</th><th class="num">31-60</th><th class="num">61-90</th><th class="num">Over 90</th><th class="num">Total</th><th>Oldest due</th></tr></thead>
+    <tbody>
+        @foreach (var r in Model.Rows)
+        {
+            <tr>
+                <td><a asp-controller="Customers" asp-action="Statement" asp-route-id="@r.CustomerId"><span class="mono">@r.CustomerNumber</span> @r.CustomerName</a></td>
+                <td class="num">@r.PaymentTermsDays</td>
+                <td class="num">@r.InvoiceCount</td>
+                <td class="num">@r.NotYetDue.ToString("N2")</td>
+                <td class="num">@r.Days1To30.ToString("N2")</td>
+                <td class="num">@r.Days31To60.ToString("N2")</td>
+                <td class="num">@r.Days61To90.ToString("N2")</td>
+                <td class="num @(r.Over90 > 0 ? "warn" : "")">@r.Over90.ToString("N2")</td>
+                <td class="num">@r.TotalOutstanding.ToString("N2")</td>
+                <td class="date">@r.OldestDueDate.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="10" class="muted">Nothing outstanding.</td></tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="total">
+            <td colspan="2">Total</td>
+            <td class="num">@Model.Rows.Sum(r => r.InvoiceCount)</td>
+            <td class="num">@Model.Rows.Sum(r => r.NotYetDue).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.Days1To30).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.Days31To60).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.Days61To90).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.Over90).ToString("N2")</td>
+            <td class="num">@Model.Rows.Sum(r => r.TotalOutstanding).ToString("N2")</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>

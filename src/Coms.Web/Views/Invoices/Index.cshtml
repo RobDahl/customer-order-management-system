@@ -30,6 +30,9 @@
         <button type="submit">Search</button>
         <a asp-action="Index" class="btn">Clear</a>
     </form>
+    <div class="toolbar-actions">
+        <a href="@Url.Action("Export")@Context.Request.QueryString" class="btn">Export CSV</a>
+    </div>
 </div>
 
 <table class="grid">

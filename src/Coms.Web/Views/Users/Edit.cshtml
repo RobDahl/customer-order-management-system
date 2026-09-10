@@ -1,0 +1,48 @@
+@model EditUserModel
+@{
+    ViewData["Title"] = "Edit user " + Model.UserName;
+    ViewData["Nav"] = "Users";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Users</a> &rsaquo; " + Model.UserName;
+}
+
+<form asp-action="Edit" method="post" class="narrow" autocomplete="off">
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <input type="hidden" asp-for="Id" />
+    <section class="panel">
+        <div class="form-grid">
+            <label>User name</label>
+            <div>@Model.UserName @(Model.IsSelf ? "(you)" : "")</div>
+
+            <label asp-for="Email">Email</label>
+            <div><input asp-for="Email" maxlength="256" /><span asp-validation-for="Email" class="field-error"></span></div>
+
+            <label asp-for="Role">Role *</label>
+            <div>
+                <select asp-for="Role" class="short">
+                    @foreach (string role in Roles.All)
+                    {
+                        <option value="@role" selected="@(Model.Role == role)">@role</option>
+                    }
+                </select>
+                <span asp-validation-for="Role" class="field-error"></span>
+            </div>
+
+            <label asp-for="IsLockedOut">Locked out</label>
+            <div>
+                <label><input asp-for="IsLockedOut" type="checkbox" /> Account cannot sign in</label>
+                <span asp-validation-for="IsLockedOut" class="field-error"></span>
+                @if (Model.LockoutEnd.HasValue && Model.LockoutEnd.Value > System.DateTimeOffset.UtcNow && Model.LockoutEnd.Value.Year < 9000)
+                {
+                    <span class="muted">Temporarily locked until @Model.LockoutEnd.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") after failed sign-ins.</span>
+                }
+            </div>
+
+            <label asp-for="NewPassword">New password</label>
+            <div><input asp-for="NewPassword" type="password" autocomplete="new-password" /><span asp-validation-for="NewPassword" class="field-error"></span><span class="muted">Leave blank to keep the current password.</span></div>
+        </div>
+    </section>
+    <div class="form-actions">
+        <a asp-action="Index" class="btn">Cancel</a>
+        <button type="submit" class="primary">Save</button>
+    </div>
+</form>

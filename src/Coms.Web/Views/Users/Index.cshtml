@@ -1,0 +1,29 @@
+@model UserListModel
+@{
+    ViewData["Title"] = "Users";
+    ViewData["Nav"] = "Users";
+}
+
+<div class="toolbar">
+    <p class="muted">Administrator: everything. Staff: create and change records. Read only: view and export.</p>
+    <div class="toolbar-actions">
+        <a asp-action="Create" class="btn primary">New user</a>
+    </div>
+</div>
+
+<table class="grid">
+    <thead><tr><th>User name</th><th>Email</th><th>Role</th><th>Locked</th><th class="num">Failed sign-ins</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var u in Model.Users)
+        {
+            <tr class="@(u.IsLockedOut ? "row-muted" : "")">
+                <td>@u.UserName</td>
+                <td>@u.Email</td>
+                <td>@u.Role</td>
+                <td class="@(u.IsLockedOut ? "err" : "")">@(u.IsLockedOut ? "Yes" : "")</td>
+                <td class="num">@u.AccessFailedCount</td>
+                <td><a asp-action="Edit" asp-route-id="@u.Id">Edit</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

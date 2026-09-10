@@ -660,3 +660,58 @@ table.def.compact td {
         print-color-adjust: exact;
     }
 }
+
+/* Dashboard tiles and bar tables */
+
+.tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.tile {
+    flex: 1 1 140px;
+    min-width: 140px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding: 6px 10px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.tile:hover {
+    text-decoration: none;
+    background: var(--row-zebra);
+}
+
+.tile-value {
+    display: block;
+    font-size: 20px;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.tile-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.tile-warn .tile-value {
+    color: var(--state-warn);
+}
+
+table.bars td.bar-col,
+table.bars th.bar-col {
+    width: 40%;
+}
+
+.bar {
+    height: 12px;
+    background: var(--bg-topbar);
+    min-width: 1px;
+}
+
+input[type="file"] {
+    font: inherit;
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Coms.Application.Csv;
 using Coms.Application.Customers;
 using Coms.Application.Invoices;
 using Coms.Application.Notes;
@@ -22,13 +23,15 @@ namespace Coms.Web.Controllers
         private readonly IOrderService _orders;
         private readonly ICustomerService _customers;
         private readonly INoteService _notes;
+        private readonly ICsvExportService _export;
 
-        public InvoicesController(IInvoiceService invoices, IOrderService orders, ICustomerService customers, INoteService notes)
+        public InvoicesController(IInvoiceService invoices, IOrderService orders, ICustomerService customers, INoteService notes, ICsvExportService export)
         {
             _invoices = invoices;
             _orders = orders;
             _customers = customers;
             _notes = notes;
+            _export = export;
         }
 
         [HttpGet]
@@ -36,6 +39,12 @@ namespace Coms.Web.Controllers
         {
             query.Results = await _invoices.SearchAsync(query.ToFilter(), query.ToPagedRequest());
             return View(query);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Export(InvoiceListModel query)
+        {
+            return await CsvFileAsync("invoices", w => _export.WriteInvoicesAsync(w, query.ToFilter()));
         }
 
         [HttpGet]

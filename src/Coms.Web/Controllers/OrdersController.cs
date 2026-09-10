@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Coms.Application.Csv;
 using Coms.Application.Customers;
 using Coms.Application.Invoices;
 using Coms.Application.Notes;
@@ -32,14 +33,16 @@ namespace Coms.Web.Controllers
         private readonly IProductService _products;
         private readonly IInvoiceService _invoices;
         private readonly INoteService _notes;
+        private readonly ICsvExportService _export;
 
-        public OrdersController(IOrderService orders, ICustomerService customers, IProductService products, IInvoiceService invoices, INoteService notes)
+        public OrdersController(IOrderService orders, ICustomerService customers, IProductService products, IInvoiceService invoices, INoteService notes, ICsvExportService export)
         {
             _orders = orders;
             _customers = customers;
             _products = products;
             _invoices = invoices;
             _notes = notes;
+            _export = export;
         }
 
         [HttpGet]
@@ -52,6 +55,26 @@ namespace Coms.Web.Controllers
             }
 
             query.Results = await _orders.SearchAsync(query.ToFilter(), query.ToPagedRequest());
+            return View(query);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Export(OrderListModel query)
+        {
+            return await CsvFileAsync("orders", w => _export.WriteOrdersAsync(w, query.ToFilter()));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportLines(int id)
+        {
+            return await CsvFileAsync("order-" + id + "-lines", w => _export.WriteOrderLinesAsync(w, id));
+        }
+
+        /// <summary>Audit: every status change across all orders.</summary>
+        [HttpGet]
+        public async Task<IActionResult> History(HistoryListModel query)
+        {
+            query.Results = await _orders.GetRecentHistoryAsync(query.ToFilter(), query.ToPagedRequest());
             return View(query);
         }
 

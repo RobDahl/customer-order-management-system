@@ -93,6 +93,26 @@ namespace Coms.Web
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            // Liveness check for monitoring: proves the database answers.
+            app.MapGet("/health", async (Coms.Data.Connections.IDbConnectionFactory factory) =>
+            {
+                try
+                {
+                    using (System.Data.IDbConnection connection = await factory.OpenAsync())
+                    using (System.Data.IDbCommand command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT 1";
+                        command.ExecuteScalar();
+                    }
+
+                    return Results.Text("OK", "text/plain");
+                }
+                catch (Exception ex)
+                {
+                    return Results.Text("Database unavailable: " + ex.Message, "text/plain", statusCode: 503);
+                }
+            }).AllowAnonymous();
+
             await IdentitySeeder.RunAsync(app.Services);
 
             await app.RunAsync();

@@ -28,6 +28,7 @@
         }
         <a asp-action="Print" asp-route-id="@o.Id" asp-route-kind="confirmation" class="btn" target="_blank">Print confirmation</a>
         <a asp-action="Print" asp-route-id="@o.Id" asp-route-kind="picklist" class="btn" target="_blank">Print pick list</a>
+        <a asp-action="ExportLines" asp-route-id="@o.Id" class="btn">Export lines CSV</a>
     </div>
 </div>
 

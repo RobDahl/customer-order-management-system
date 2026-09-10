@@ -1,9 +1,7 @@
 @inject AppInfo App
 @{
     string userName = User.Identity?.Name ?? string.Empty;
-    string role = User.IsInRole(Roles.Administrator) ? "Administrator"
-                : User.IsInRole(Roles.Staff) ? "Staff"
-                : User.IsInRole(Roles.ReadOnly) ? "Read only" : string.Empty;
+    string role = User.RoleLabel();
     string? flash = TempData[Coms.Web.Controllers.ComsController.FlashKey] as string;
     string flashType = TempData[Coms.Web.Controllers.ComsController.FlashTypeKey] as string ?? "ok";
     string area = ViewData["Nav"] as string ?? string.Empty;
@@ -51,14 +49,25 @@
             </div>
             <div class="sidenav-group">
                 <div class="sidenav-heading">Reports</div>
-                <span class="sidenav-disabled">Sales by month</span>
-                <span class="sidenav-disabled">Receivables aging</span>
+                <a asp-controller="Reports" asp-action="SalesByMonth">Sales by month</a>
+                <a asp-controller="Reports" asp-action="TopCustomers">Top customers</a>
+                <a asp-controller="Reports" asp-action="ProductSales">Product sales</a>
+                <a asp-controller="Reports" asp-action="ArAging">Receivables aging</a>
+                <a asp-controller="Reports" asp-action="LowStock">Low stock</a>
             </div>
-            @if (User.IsInRole(Roles.Administrator))
+            <div class="sidenav-group">
+                <div class="sidenav-heading">Tools</div>
+                @if (User.CanEdit())
+                {
+                    <a asp-controller="Import" asp-action="Index" class="@(area == "Import" ? "current" : "")">CSV import</a>
+                }
+                <a asp-controller="Orders" asp-action="History" class="@(area == "Audit" ? "current" : "")">Audit trail</a>
+            </div>
+            @if (User.IsAdministrator())
             {
                 <div class="sidenav-group">
                     <div class="sidenav-heading">Administration</div>
-                    <span class="sidenav-disabled">Users</span>
+                    <a asp-controller="Users" asp-action="Index" class="@(area == "Users" ? "current" : "")">Users</a>
                 </div>
             }
         </nav>

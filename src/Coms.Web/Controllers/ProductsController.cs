@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Coms.Application.Csv;
 using Coms.Application.Products;
 using Coms.Domain.Common;
 using Coms.Domain.Products;
@@ -13,10 +14,12 @@ namespace Coms.Web.Controllers
     public class ProductsController : ComsController
     {
         private readonly IProductService _products;
+        private readonly ICsvExportService _export;
 
-        public ProductsController(IProductService products)
+        public ProductsController(IProductService products, ICsvExportService export)
         {
             _products = products;
+            _export = export;
         }
 
         [HttpGet]
@@ -25,6 +28,12 @@ namespace Coms.Web.Controllers
             query.Categories = await _products.GetCategoriesAsync();
             query.Results = await _products.SearchAsync(query.ToFilter(), query.ToPagedRequest());
             return View(query);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Export(ProductListModel query)
+        {
+            return await CsvFileAsync("products", w => _export.WriteProductsAsync(w, query.ToFilter()));
         }
 
         [HttpGet]

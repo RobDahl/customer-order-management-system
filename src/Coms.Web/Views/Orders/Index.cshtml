@@ -30,12 +30,13 @@
         <button type="submit">Search</button>
         <a asp-action="Index" class="btn">Clear</a>
     </form>
-    @if (User.CanEdit())
-    {
-        <div class="toolbar-actions">
+    <div class="toolbar-actions">
+        <a href="@Url.Action("Export")@Context.Request.QueryString" class="btn">Export CSV</a>
+        @if (User.CanEdit())
+        {
             <a asp-action="Create" asp-route-customerId="@Model.CustomerId" class="btn primary">New order</a>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 <table class="grid">

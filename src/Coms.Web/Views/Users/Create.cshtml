@@ -1,0 +1,37 @@
+@model CreateUserModel
+@{
+    ViewData["Title"] = "New user";
+    ViewData["Nav"] = "Users";
+    ViewData["Breadcrumb"] = "<a href=\"" + Url.Action("Index") + "\">Users</a> &rsaquo; New";
+}
+
+<form asp-action="Create" method="post" class="narrow" autocomplete="off">
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <section class="panel">
+        <div class="form-grid">
+            <label asp-for="UserName">User name *</label>
+            <div><input asp-for="UserName" maxlength="256" autocomplete="off" /><span asp-validation-for="UserName" class="field-error"></span></div>
+
+            <label asp-for="Email">Email</label>
+            <div><input asp-for="Email" maxlength="256" /><span asp-validation-for="Email" class="field-error"></span></div>
+
+            <label asp-for="Password">Password *</label>
+            <div><input asp-for="Password" type="password" autocomplete="new-password" /><span asp-validation-for="Password" class="field-error"></span><span class="muted">At least 8 characters with upper and lower case letters and a digit.</span></div>
+
+            <label asp-for="Role">Role *</label>
+            <div>
+                <select asp-for="Role" class="short">
+                    @foreach (string role in Roles.All)
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </select>
+                <span asp-validation-for="Role" class="field-error"></span>
+            </div>
+        </div>
+    </section>
+    <div class="form-actions">
+        <a asp-action="Index" class="btn">Cancel</a>
+        <button type="submit" class="primary">Create user</button>
+    </div>
+</form>

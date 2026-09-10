@@ -1,0 +1,51 @@
+@model HistoryListModel
+@{
+    ViewData["Title"] = "Audit trail";
+    ViewData["Nav"] = "Audit";
+}
+
+<div class="toolbar">
+    <form method="get" class="filters">
+        <label for="OrderNumber">Order</label>
+        <input type="text" id="OrderNumber" name="orderNumber" value="@Model.OrderNumber" class="short" />
+        <label for="ToStatus">Changed to</label>
+        <select id="ToStatus" name="toStatus">
+            <option value="">Any</option>
+            @foreach (OrderStatus status in System.Enum.GetValues(typeof(OrderStatus)))
+            {
+                <option value="@status" selected="@(Model.ToStatus == status)">@status</option>
+            }
+        </select>
+        <label for="ChangedBy">By</label>
+        <input type="text" id="ChangedBy" name="changedBy" value="@Model.ChangedBy" class="short" />
+        <label for="From">From</label>
+        <input type="date" id="From" name="from" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+        <label for="To">To</label>
+        <input type="date" id="To" name="to" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+        <button type="submit">Search</button>
+        <a asp-action="History" class="btn">Clear</a>
+    </form>
+</div>
+
+<table class="grid">
+    <thead><tr><th>When (UTC)</th><th>Order</th><th>From</th><th>To</th><th>By</th><th>Comment</th></tr></thead>
+    <tbody>
+        @foreach (OrderStatusChange h in Model.Results.Items)
+        {
+            <tr>
+                <td class="date">@h.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td class="mono"><a asp-action="Details" asp-route-id="@h.OrderId">@h.OrderNumber</a></td>
+                <td>@(h.FromStatus?.ToString())</td>
+                <td class="status-@h.ToStatus.ToString().ToLowerInvariant()">@h.ToStatus</td>
+                <td>@h.ChangedBy</td>
+                <td>@h.Comment</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="6" class="muted">No changes match.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="PagerModel.From(Model.Results)" />

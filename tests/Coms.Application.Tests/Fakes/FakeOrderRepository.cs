@@ -86,9 +86,12 @@ namespace Coms.Application.Tests.Fakes
             return Task.FromResult(rows);
         }
 
-        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(PagedRequest paging, CancellationToken cancellationToken = default)
+        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(HistoryFilter filter, PagedRequest paging, CancellationToken cancellationToken = default)
         {
-            List<OrderStatusChange> all = Orders.SelectMany(o => o.History).OrderByDescending(h => h.ChangedAtUtc).ToList();
+            List<OrderStatusChange> all = Orders.SelectMany(o => o.History)
+                .Where(h => !filter.ToStatus.HasValue || h.ToStatus == filter.ToStatus.Value)
+                .OrderByDescending(h => h.ChangedAtUtc)
+                .ToList();
             List<OrderStatusChange> page = all.Skip(paging.Offset).Take(paging.PageSize).ToList();
             return Task.FromResult(new PagedResult<OrderStatusChange>(page, all.Count, paging.Page, paging.PageSize));
         }

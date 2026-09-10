@@ -56,9 +56,9 @@ namespace Coms.Application.Orders
             return _orders.GetRecentAsync(count, cancellationToken);
         }
 
-        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(PagedRequest paging, CancellationToken cancellationToken = default)
+        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(HistoryFilter filter, PagedRequest paging, CancellationToken cancellationToken = default)
         {
-            return _orders.GetRecentHistoryAsync(paging, cancellationToken);
+            return _orders.GetRecentHistoryAsync(filter, paging, cancellationToken);
         }
 
         public async Task<Result<Order>> CreateDraftAsync(OrderInput input, CancellationToken cancellationToken = default)

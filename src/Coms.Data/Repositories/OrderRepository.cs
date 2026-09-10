@@ -138,13 +138,51 @@ namespace Coms.Data.Repositories
             return (await connection.QueryAsync<OrderStatusChange>(Text(sql, new { Id = orderId }, cancellationToken)).ConfigureAwait(false)).ToList();
         }
 
-        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(PagedRequest paging, CancellationToken cancellationToken = default)
+        public Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(HistoryFilter filter, PagedRequest paging, CancellationToken cancellationToken = default)
         {
+            var where = new List<string>();
+            var parameters = new DynamicParameters();
+
+            string? orderNumber = StartsWith(filter.OrderNumber);
+            if (orderNumber != null)
+            {
+                where.Add("o.OrderNumber LIKE @OrderNumber");
+                parameters.Add("@OrderNumber", orderNumber);
+            }
+
+            if (filter.ToStatus.HasValue)
+            {
+                where.Add("h.ToStatus = @ToStatus");
+                parameters.Add("@ToStatus", filter.ToStatus.Value.ToString());
+            }
+
+            string? changedBy = StartsWith(filter.ChangedBy);
+            if (changedBy != null)
+            {
+                where.Add("h.ChangedBy LIKE @ChangedBy");
+                parameters.Add("@ChangedBy", changedBy);
+            }
+
+            if (filter.FromDate.HasValue)
+            {
+                where.Add("h.ChangedAtUtc >= @FromDate");
+                parameters.Add("@FromDate", filter.FromDate.Value.Date);
+            }
+
+            if (filter.ToDate.HasValue)
+            {
+                where.Add("h.ChangedAtUtc < @ToDateExclusive");
+                parameters.Add("@ToDateExclusive", filter.ToDate.Value.Date.AddDays(1));
+            }
+
+            string fromAndWhere = "FROM dbo.OrderStatusHistory h JOIN dbo.Orders o ON o.Id = h.OrderId"
+                + (where.Count == 0 ? string.Empty : " WHERE " + string.Join(" AND ", where));
+
             return QueryPagedAsync<OrderStatusChange>(
-                HistoryColumns,
-                "FROM dbo.OrderStatusHistory h",
+                HistoryColumns + ", o.OrderNumber",
+                fromAndWhere,
                 "h.ChangedAtUtc DESC, h.Id DESC",
-                new DynamicParameters(),
+                parameters,
                 paging,
                 cancellationToken);
         }

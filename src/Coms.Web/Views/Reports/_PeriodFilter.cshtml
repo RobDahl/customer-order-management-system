@@ -1,0 +1,5 @@
+@model PeriodReportModel
+<label for="From">From</label>
+<input type="date" id="From" name="from" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+<label for="To">To</label>
+<input type="date" id="To" name="to" value="@(Model.To?.ToString("yyyy-MM-dd"))" />

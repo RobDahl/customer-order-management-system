@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "CSV import";
+    ViewData["Nav"] = "Import";
+}
+
+<table class="grid narrow">
+    <thead><tr><th>Data</th><th>Matches existing by</th><th></th><th></th></tr></thead>
+    <tbody>
+        <tr>
+            <td>Customers</td>
+            <td>Customer number (leave blank for new customers)</td>
+            <td><a asp-action="Upload" asp-route-kind="customers" class="btn primary">Import customers</a></td>
+            <td><a asp-action="Template" asp-route-kind="customers">Download template</a></td>
+        </tr>
+        <tr>
+            <td>Products</td>
+            <td>SKU</td>
+            <td><a asp-action="Upload" asp-route-kind="products" class="btn primary">Import products</a></td>
+            <td><a asp-action="Template" asp-route-kind="products">Download template</a></td>
+        </tr>
+    </tbody>
+</table>
+
+<section class="panel narrow">
+    <h2>How it works</h2>
+    <ol>
+        <li>Download the template or export the current data to get the column layout. Column names are matched regardless of case; extra columns are ignored.</li>
+        <li>Choose the file and press <strong>Check file</strong>. Every row is validated and each problem is listed with its row number and column. Nothing is written.</li>
+        <li>Fix the file if needed, then press <strong>Import</strong>. All rows are written in one transaction; a file with any error imports nothing.</li>
+    </ol>
+</section>

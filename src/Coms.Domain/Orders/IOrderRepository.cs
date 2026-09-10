@@ -18,8 +18,8 @@ namespace Coms.Domain.Orders
 
         Task<IReadOnlyList<OrderStatusChange>> GetHistoryAsync(int orderId, CancellationToken cancellationToken = default);
 
-        /// <summary>Recent status changes across all orders, newest first, for the audit page.</summary>
-        Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(PagedRequest paging, CancellationToken cancellationToken = default);
+        /// <summary>Status changes across all orders, newest first, with order numbers, for the audit page.</summary>
+        Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(HistoryFilter filter, PagedRequest paging, CancellationToken cancellationToken = default);
 
         /// <summary>Inserts header and lines, assigns OrderNumber, writes the creation history row.</summary>
         Task InsertAsync(Order order, string userName, CancellationToken cancellationToken = default);

@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Coms.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -69,6 +72,25 @@ namespace Coms.Web.Controllers
         protected static bool IsModelValid(ModelStateDictionary modelState)
         {
             return modelState.IsValid;
+        }
+
+        /// <summary>
+        /// Builds a CSV download. UTF-8 with a byte order mark so Excel opens
+        /// it with the right encoding; the file name gets a date stamp.
+        /// </summary>
+        protected async Task<FileContentResult> CsvFileAsync(string baseName, Func<TextWriter, Task> write)
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), 4096, leaveOpen: true))
+                {
+                    await write(writer);
+                    await writer.FlushAsync();
+                }
+
+                string fileName = baseName + "-" + DateTime.UtcNow.ToString("yyyyMMdd") + ".csv";
+                return File(stream.ToArray(), "text/csv; charset=utf-8", fileName);
+            }
         }
     }
 }

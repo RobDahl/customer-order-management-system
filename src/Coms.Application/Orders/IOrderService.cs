@@ -16,7 +16,7 @@ namespace Coms.Application.Orders
 
         Task<IReadOnlyList<OrderSummary>> GetRecentAsync(int count, CancellationToken cancellationToken = default);
 
-        Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(PagedRequest paging, CancellationToken cancellationToken = default);
+        Task<PagedResult<OrderStatusChange>> GetRecentHistoryAsync(HistoryFilter filter, PagedRequest paging, CancellationToken cancellationToken = default);
 
         /// <summary>Builds and saves a Draft order from user input.</summary>
         Task<Result<Order>> CreateDraftAsync(OrderInput input, CancellationToken cancellationToken = default);

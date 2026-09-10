@@ -28,12 +28,13 @@
         <button type="submit">Search</button>
         <a asp-action="Index" class="btn">Clear</a>
     </form>
-    @if (User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Staff))
-    {
-        <div class="toolbar-actions">
+    <div class="toolbar-actions">
+        <a href="@Url.Action("Export")@Context.Request.QueryString" class="btn">Export CSV</a>
+        @if (User.CanEdit())
+        {
             <a asp-action="Create" class="btn primary">New product</a>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 <table class="grid">

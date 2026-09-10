@@ -1,20 +1,106 @@
+@model DashboardModel
 @{
     ViewData["Title"] = "Dashboard";
     ViewData["Nav"] = "Dashboard";
+    var c = Model.Counts;
 }
 
-<table class="grid narrow">
-    <thead>
-        <tr>
-            <th>Module</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr><td><a asp-controller="Customers" asp-action="Index">Customers</a></td><td>Available</td></tr>
-        <tr><td><a asp-controller="Products" asp-action="Index">Products</a></td><td>Available</td></tr>
-        <tr><td>Orders</td><td class="muted">Not yet available</td></tr>
-        <tr><td>Invoices</td><td class="muted">Not yet available</td></tr>
-        <tr><td>Reports</td><td class="muted">Not yet available</td></tr>
-    </tbody>
-</table>
+<div class="tiles">
+    <a class="tile" asp-controller="Orders" asp-action="Index" asp-route-status="Draft"><span class="tile-value">@c.DraftOrders</span><span class="tile-label">Draft orders</span></a>
+    <a class="tile" asp-controller="Orders" asp-action="Index" asp-route-status="Submitted"><span class="tile-value">@c.SubmittedOrders</span><span class="tile-label">Awaiting approval</span></a>
+    <a class="tile" asp-controller="Orders" asp-action="Index" asp-route-status="Approved"><span class="tile-value">@c.ApprovedOrders</span><span class="tile-label">Approved, to fulfil</span></a>
+    <a class="tile" asp-controller="Orders" asp-action="Index" asp-route-status="Fulfilled"><span class="tile-value">@c.FulfilledOrders</span><span class="tile-label">Fulfilled, to invoice</span></a>
+    <a class="tile" asp-controller="Invoices" asp-action="Index" asp-route-status="Open"><span class="tile-value">@c.OpenInvoices</span><span class="tile-label">Open invoices (@c.OpenInvoiceBalance.ToString("N0"))</span></a>
+    <a class="tile @(c.OverdueInvoices > 0 ? "tile-warn" : "")" asp-controller="Invoices" asp-action="Index" asp-route-overdue="true"><span class="tile-value">@c.OverdueInvoices</span><span class="tile-label">Overdue (@c.OverdueBalance.ToString("N0"))</span></a>
+    <a class="tile @(c.LowStockProducts > 0 ? "tile-warn" : "")" asp-controller="Products" asp-action="Index" asp-route-lowStock="true" asp-route-active="active"><span class="tile-value">@c.LowStockProducts</span><span class="tile-label">Low stock products</span></a>
+    <a class="tile" asp-controller="Customers" asp-action="Index" asp-route-status="Active"><span class="tile-value">@c.ActiveCustomers</span><span class="tile-label">Active customers (@c.OnHoldCustomers on hold)</span></a>
+</div>
+
+<div class="columns">
+    <section class="panel">
+        <h2>Sales, last twelve months</h2>
+        <table class="grid bars">
+            <thead><tr><th>Month</th><th class="num">Orders</th><th class="num">Total</th><th class="bar-col"></th></tr></thead>
+            <tbody>
+                @foreach (var row in Model.Sales)
+                {
+                    <tr>
+                        <td class="mono">@row.MonthLabel</td>
+                        <td class="num">@row.OrderCount</td>
+                        <td class="num">@row.Total.ToString("N0")</td>
+                        <td class="bar-col"><div class="bar" style="width: @Model.BarPercent(row)%"></div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p class="muted"><a asp-controller="Reports" asp-action="SalesByMonth">Full report</a></p>
+    </section>
+
+    <section class="panel">
+        <h2>Overdue invoices</h2>
+        <table class="grid">
+            <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="num">Balance</th><th class="num">Days</th></tr></thead>
+            <tbody>
+                @foreach (var i in Model.OverdueInvoices)
+                {
+                    <tr>
+                        <td class="mono"><a asp-controller="Invoices" asp-action="Details" asp-route-id="@i.InvoiceId">@i.InvoiceNumber</a></td>
+                        <td>@i.CustomerName</td>
+                        <td class="date">@i.DueDate.ToString("yyyy-MM-dd")</td>
+                        <td class="num">@i.Balance.ToString("N2")</td>
+                        <td class="num warn">@i.DaysOverdue</td>
+                    </tr>
+                }
+                @if (Model.OverdueInvoices.Count == 0)
+                {
+                    <tr><td colspan="5" class="muted">Nothing overdue.</td></tr>
+                }
+            </tbody>
+        </table>
+        <p class="muted"><a asp-controller="Reports" asp-action="ArAging">Receivables aging</a></p>
+    </section>
+</div>
+
+<div class="columns">
+    <section class="panel">
+        <h2>Recent orders</h2>
+        <table class="grid">
+            <thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Status</th><th class="num">Total</th></tr></thead>
+            <tbody>
+                @foreach (var o in Model.RecentOrders)
+                {
+                    <tr>
+                        <td class="mono"><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.OrderId">@o.OrderNumber</a></td>
+                        <td class="date">@o.OrderDate.ToString("yyyy-MM-dd")</td>
+                        <td>@o.CustomerName</td>
+                        <td class="status-@o.Status.ToString().ToLowerInvariant()">@o.Status</td>
+                        <td class="num">@o.Total.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Low stock</h2>
+        <table class="grid">
+            <thead><tr><th>SKU</th><th>Product</th><th class="num">On hand</th><th class="num">Demand</th><th class="num">Reorder</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.LowStock)
+                {
+                    <tr>
+                        <td class="mono"><a asp-controller="Products" asp-action="Details" asp-route-id="@p.ProductId">@p.Sku</a></td>
+                        <td>@p.Name</td>
+                        <td class="num warn">@p.QuantityOnHand.ToString("0.###")</td>
+                        <td class="num">@p.PendingDemand.ToString("0.###")</td>
+                        <td class="num">@p.ReorderLevel.ToString("0.###")</td>
+                    </tr>
+                }
+                @if (Model.LowStock.Count == 0)
+                {
+                    <tr><td colspan="5" class="muted">Nothing below reorder level.</td></tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>

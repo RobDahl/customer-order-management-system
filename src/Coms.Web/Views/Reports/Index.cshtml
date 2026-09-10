@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Reports";
+    ViewData["Nav"] = "Reports";
+}
+
+<table class="grid narrow">
+    <thead><tr><th>Report</th><th>Shows</th></tr></thead>
+    <tbody>
+        <tr><td><a asp-action="SalesByMonth">Sales by month</a></td><td>Order count and value per month for fulfilled and invoiced orders.</td></tr>
+        <tr><td><a asp-action="TopCustomers">Top customers</a></td><td>Customers ranked by sales value in a period with their share of the total.</td></tr>
+        <tr><td><a asp-action="ProductSales">Product sales</a></td><td>Quantity, revenue, cost and margin per product.</td></tr>
+        <tr><td><a asp-action="ArAging">Receivables aging</a></td><td>Outstanding balances per customer bucketed by days overdue.</td></tr>
+        <tr><td><a asp-action="LowStock">Low stock</a></td><td>Active products at or below reorder level after open demand.</td></tr>
+    </tbody>
+</table>
+<p class="muted">Every report has an "Export CSV" button that downloads the same rows.</p>

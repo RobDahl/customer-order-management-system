@@ -318,9 +318,12 @@ namespace Coms.Data.Tests.Repositories
 
             using (DbSession session = _db.OpenSession())
             {
-                PagedResult<OrderStatusChange> page = await new OrderRepository(session).GetRecentHistoryAsync(PagedRequest.FirstPage(20));
+                PagedResult<OrderStatusChange> page = await new OrderRepository(session).GetRecentHistoryAsync(
+                    new HistoryFilter { ToStatus = OrderStatus.Invoiced }, PagedRequest.FirstPage(20));
 
                 Assert.Equal(20, page.Items.Count);
+                Assert.All(page.Items, h => Assert.Equal(OrderStatus.Invoiced, h.ToStatus));
+                Assert.All(page.Items, h => Assert.StartsWith("ORD-", h.OrderNumber));
                 for (int i = 1; i < page.Items.Count; i++)
                 {
                     Assert.True(page.Items[i - 1].ChangedAtUtc >= page.Items[i].ChangedAtUtc);

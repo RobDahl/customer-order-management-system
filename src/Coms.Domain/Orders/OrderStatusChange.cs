@@ -9,6 +9,9 @@ namespace Coms.Domain.Orders
 
         public int OrderId { get; set; }
 
+        /// <summary>Filled by cross-order history queries; empty when loaded as part of one order.</summary>
+        public string OrderNumber { get; set; } = string.Empty;
+
         /// <summary>Null for the row that records creation.</summary>
         public OrderStatus? FromStatus { get; set; }
 
