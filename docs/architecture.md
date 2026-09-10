@@ -110,6 +110,31 @@ bad cell with its row number and field, and only when the whole file is
 clean writes everything inside one unit of work. Exports use the same row
 layout, so an exported file imports unchanged.
 
+### Desktop client
+
+`Coms.Desktop` targets .NET Framework 4.8 and C# 7.3 and references the
+same three shared libraries as the web host. It builds its own dependency
+injection container at start-up (`AddComsData`, `AddComsApplication`) and
+runs every screen action inside a scope, so a list refresh or a save gets
+one connection and one optional transaction, exactly like a web request.
+
+- One main window with menu, toolbar and status bar hosts a list screen
+  in a panel; records open as modal dialogs. No MDI.
+- `ListScreen<T>` is the single list layout (filters, grid, pager,
+  Refresh / New / Open / Export CSV); each module subclasses it with its
+  columns and filter controls.
+- Forms are built in code with `TableLayoutPanel` and standard controls;
+  no custom drawing and no third-party control suite.
+- Order entry edits lines in a `DataGridView` bound to plain row objects
+  and recomputes totals with the domain's own `Order.Recalculate`, so the
+  screen shows the same figures the server will store.
+- Business results come back as `Result`; a validation failure lists its
+  fields, a concurrency conflict reloads the record.
+- Printing is text: documents are built as fixed-width lines and sent to
+  a `PrintDocument` with a monospace font and a page footer.
+- Logging goes through `Microsoft.Extensions.Logging` to a small rolling
+  file provider under `%LOCALAPPDATA%\Coms\logs`.
+
 ### Authentication
 
 - Web: ASP.NET Core Identity with three roles: Administrator, Staff, ReadOnly.

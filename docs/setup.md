@@ -82,6 +82,12 @@ dotnet build src/Coms.Desktop
 src\Coms.Desktop\bin\Debug\net48\Coms.Desktop.exe
 ```
 
+The desktop client reads its settings from `src/Coms.Desktop/App.config`:
+the connection string, the tax rate and other business options under
+`appSettings`, and the log folder (`%LOCALAPPDATA%\Coms\logs` by default).
+It records the Windows user name on everything it changes and does not
+sign in separately; see [architecture.md](architecture.md) for why.
+
 ## 6. Run the tests
 
 ```
