@@ -196,6 +196,20 @@ about 4,000 invoices and 3,500 payments, and a few hundred notes. Dates are
 anchored to 2026-09-01 so reports are reproducible. The script is a no-op
 when customers already exist; use `--drop --seed` to regenerate.
 
+## Performance notes
+
+Measured on the seed database (5,000 orders, 4,000 invoices) with
+`db/scripts/query-plans.sql`, `SET STATISTICS IO`:
+
+| Query | Logical reads | Notes |
+| ----- | ------------- | ----- |
+| Order list, one status, page 3 of 50, plus count | Orders 2, Customers 132, OrderLines 162, Invoices 158 | `IX_Orders_Status_OrderDate` seeks the status; the per-row joins to Customers, the line count and the live invoice are index seeks. Under 500 reads for a page. |
+| Receivables aging | Invoices 53, Customers 12 | `IX_Invoices_Status_DueDate` covers the open-invoice scan; one pass with conditional aggregation. |
+
+Both return in single-digit milliseconds on LocalDB. Nothing in the
+application issues an unbounded query: every list is paged server-side
+and every report is bounded by its parameters.
+
 ## Useful scripts
 
 | Script | Purpose |
@@ -203,3 +217,4 @@ when customers already exist; use `--drop --seed` to regenerate.
 | `db/scripts/sample-reports.sql` | Runs every reporting object against the seed data |
 | `db/scripts/workflow-smoke-test.sql` | Drives one order through the workflow procedures, checking each expected failure, then restores the rows |
 | `db/scripts/index-usage.sql` | Index usage statistics and missing-index suggestions |
+| `db/scripts/query-plans.sql` | I/O statistics and estimated plans for the two heaviest everyday queries |

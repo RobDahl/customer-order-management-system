@@ -118,6 +118,7 @@ Everything above in one place. All commands run from the repository root.
 | Run every report against the seed data | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -W -w 200 -i db/scripts/sample-reports.sql` |
 | Exercise the workflow procedures | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -i db/scripts/workflow-smoke-test.sql` |
 | Index usage and missing-index suggestions | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -W -w 200 -i db/scripts/index-usage.sql` |
+| I/O and plans for the heaviest queries | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -W -w 300 -i db/scripts/query-plans.sql` |
 | Ad-hoc query | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d Coms -I -Q "SELECT TOP 5 * FROM rpt.vw_OrderSummary"` |
 
 `-I` turns on `QUOTED_IDENTIFIER`, which the filtered indexes need. `-W`
